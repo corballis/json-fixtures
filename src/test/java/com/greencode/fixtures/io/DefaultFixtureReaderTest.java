@@ -18,6 +18,9 @@ public class DefaultFixtureReaderTest {
         TreeMap<String, JsonNode> fixtures = new TreeMap<String, JsonNode>(reader.read(resource));
 
         assertThat(fixtures.toString()).isEqualTo(
-                "{fixture1={\"name\":\"test1\",\"stringProperty\":\"property\",\"intProperty\":1}, fixture2={\"name\":\"test2\",\"stringProperty\":\"property2\",\"intProperty\":2}}");
+                "{fixture1={\"name\":\"test1\",\"stringProperty\":\"property\",\"intProperty\":1}, " +
+                        "fixture2={\"name\":\"test2\",\"stringProperty\":\"property2\"}, " +
+                        "fixture3={\"name\":\"test3\"}, " +
+                        "fixture4={\"invalidProperty\":\"test3\"}}");
     }
 }
