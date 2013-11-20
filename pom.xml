@@ -4,13 +4,41 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.greencode</groupId>
+    <groupId>com.corballis</groupId>
     <artifactId>json-fixtures</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>JSON Fixtures</name>
+    <url>https://github.com/corballis/json-fixtures</url>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <description>
+        JSON fixture library that allows you to easily create beans in your tests from fixtures defined in JSON formatted files.
+    </description>
+
+    <developers>
+        <developer>
+            <id>szmeti</id>
+            <name>Gabor Szmetanko</name>
+            <email>szmeti1@freemail.hu</email>
+        </developer>
+    </developers>
 
     <properties>
         <jackson.version>2.2.3</jackson.version>
     </properties>
+
+    <scm>
+        <connection>scm:git:git@github.com:corballis/json-fixtures.git</connection>
+        <url>scm:git:git@github.com:corballis/json-fixtures.git</url>
+        <developerConnection>scm:git:git@github.com:corballis/json-fixtures.git</developerConnection>
+    </scm>
 
     <dependencies>
 
@@ -82,7 +110,21 @@
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
