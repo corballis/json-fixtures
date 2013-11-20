@@ -1,20 +1,28 @@
 {
     "fixture1": {
-        "name": "test1",
         "stringProperty": "property",
         "intProperty": 1
     },
 
     "fixture2": {
-        "name": "test2",
         "stringProperty": "property2"
     },
 
     "fixture3": {
-        "name": "test3"
+        "listProperty": [
+            "element1",
+            "element2",
+            "element3"
+        ]
     },
 
     "fixture4": {
         "invalidProperty": "test3"
+    },
+
+    "fixture5": {
+        "nested": {
+            "prop1": "value"
+        }
     }
 }

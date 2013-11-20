@@ -95,4 +95,13 @@ public class ClassPathResource implements Resource {
         }
         return is;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("ClassPathResource");
+        sb.append("[path='").append(path).append('\'');
+        sb.append(']');
+        return sb.toString();
+    }
 }

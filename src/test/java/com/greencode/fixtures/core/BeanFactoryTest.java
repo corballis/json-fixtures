@@ -15,7 +15,7 @@ public class BeanFactoryTest {
     @Before
     public void setUp() throws Exception {
         factory = new BeanFactory();
-        ClassPathResource resource = new ClassPathResource("fixtures1.json");
+        ClassPathResource resource = new ClassPathResource("test2.fixtures.json");
         DefaultFixtureReader reader = new DefaultFixtureReader();
         factory.registerAll(reader.read(resource));
     }
@@ -24,16 +24,22 @@ public class BeanFactoryTest {
     public void createsBeanFromSingleFixture() throws Exception {
         MyBean bean = factory.create(MyBean.class, "fixture1");
 
-        assertThat(bean.getName()).isEqualTo("test1");
         assertThat(bean.getStringProperty()).isEqualTo("property");
         assertThat(bean.getIntProperty()).isEqualTo(1);
     }
 
     @Test
-    public void laterFixturesOverwritePreviousValues() throws Exception {
-        MyBean bean = factory.create(MyBean.class, "fixture1", "fixture2", "fixture3");
+    public void createsEmptyBean() throws Exception {
+        MyBean bean = factory.create(MyBean.class);
 
-        assertThat(bean.getName()).isEqualTo("test3");
+        assertThat(bean.getStringProperty()).isNull();
+        assertThat(bean.getIntProperty()).isEqualTo(0);
+    }
+
+    @Test
+    public void laterFixturesOverwritePreviousValues() throws Exception {
+        MyBean bean = factory.create(MyBean.class, "fixture1", "fixture2");
+
         assertThat(bean.getStringProperty()).isEqualTo("property2");
         assertThat(bean.getIntProperty()).isEqualTo(1);
     }
@@ -49,34 +55,23 @@ public class BeanFactoryTest {
         factory.create(MyBean.class, "fixture1", "fixture4");
     }
 
-    private static class MyBean {
-        private String name;
-        private String stringProperty;
-        private int intProperty;
+    @Test
+    public void canReadLists() throws Exception {
+        MyBean bean = factory.create(MyBean.class, "fixture1", "fixture3");
 
-        private String getName() {
-            return name;
-        }
+        assertThat(bean.getStringProperty()).isEqualTo("property");
+        assertThat(bean.getIntProperty()).isEqualTo(1);
+        assertThat(bean.getListProperty()).containsExactly("element1", "element2", "element3");
+    }
 
-        private void setName(String name) {
-            this.name = name;
-        }
+    @Test
+    public void canReadNestedObjects() throws Exception {
+        MyBean bean = factory.create(MyBean.class, "fixture3", "fixture5");
 
-        private String getStringProperty() {
-            return stringProperty;
-        }
-
-        private void setStringProperty(String stringProperty) {
-            this.stringProperty = stringProperty;
-        }
-
-        private int getIntProperty() {
-            return intProperty;
-        }
-
-        private void setIntProperty(int intProperty) {
-            this.intProperty = intProperty;
-        }
+        assertThat(bean.getStringProperty()).isNull();
+        assertThat(bean.getIntProperty()).isEqualTo(0);
+        assertThat(bean.getListProperty()).containsExactly("element1", "element2", "element3");
+        assertThat(bean.getNested().getProp1()).isEqualTo("value");
     }
 
 }

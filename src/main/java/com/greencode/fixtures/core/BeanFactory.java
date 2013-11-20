@@ -7,7 +7,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.greencode.fixtures.io.DefaultFixtureReader;
+import com.greencode.fixtures.io.FixtureReader;
+import com.greencode.fixtures.io.FixtureScanner;
+import com.greencode.fixtures.io.Resource;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +23,8 @@ import static com.google.common.collect.Lists.newArrayList;
 public class BeanFactory {
 
     private ObjectMapper objectMapper;
+    private FixtureScanner scanner;
+    private FixtureReader reader = new DefaultFixtureReader();
 
     private Cache<String, JsonNode> fixtures = CacheBuilder.newBuilder().build();
 
@@ -25,8 +32,27 @@ public class BeanFactory {
         this.objectMapper = new ObjectMapper();
     }
 
+    public BeanFactory(FixtureScanner scanner) {
+        this.objectMapper = new ObjectMapper();
+        this.scanner = scanner;
+    }
+
     public BeanFactory(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
+    }
+
+    public BeanFactory(ObjectMapper objectMapper, FixtureScanner scanner) {
+        this.objectMapper = objectMapper;
+        this.scanner = scanner;
+    }
+
+    public void init() throws IOException {
+        if (scanner != null) {
+            List<Resource> resources = scanner.collectResources();
+            for (Resource resource : resources) {
+                registerAll(reader.read(resource));
+            }
+        }
     }
 
     public void registerFixture(String name, JsonNode fixture) {
