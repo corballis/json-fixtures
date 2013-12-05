@@ -26,6 +26,9 @@ public class BeanFactoryTest {
 
         assertThat(bean.getStringProperty()).isEqualTo("property");
         assertThat(bean.getIntProperty()).isEqualTo(1);
+
+        String asString = factory.createAsString("fixture1");
+        assertThat(asString).isEqualTo("{\"stringProperty\":\"property\",\"intProperty\":1}");
     }
 
     @Test
@@ -34,6 +37,9 @@ public class BeanFactoryTest {
 
         assertThat(bean.getStringProperty()).isNull();
         assertThat(bean.getIntProperty()).isEqualTo(0);
+
+        String asString = factory.createAsString();
+        assertThat(asString).isEqualTo("{}");
     }
 
     @Test
@@ -42,6 +48,9 @@ public class BeanFactoryTest {
 
         assertThat(bean.getStringProperty()).isEqualTo("property2");
         assertThat(bean.getIntProperty()).isEqualTo(1);
+
+        String asString = factory.createAsString("fixture1", "fixture2");
+        assertThat(asString).isEqualTo("{\"stringProperty\":\"property2\",\"intProperty\":1}");
     }
 
     @Test(expected = UnrecognizedPropertyException.class)
@@ -62,6 +71,10 @@ public class BeanFactoryTest {
         assertThat(bean.getStringProperty()).isEqualTo("property");
         assertThat(bean.getIntProperty()).isEqualTo(1);
         assertThat(bean.getListProperty()).containsExactly("element1", "element2", "element3");
+
+        String asString = factory.createAsString("fixture1", "fixture3");
+        assertThat(asString).isEqualTo(
+                "{\"stringProperty\":\"property\",\"intProperty\":1,\"listProperty\":[\"element1\",\"element2\",\"element3\"]}");
     }
 
     @Test
@@ -72,6 +85,10 @@ public class BeanFactoryTest {
         assertThat(bean.getIntProperty()).isEqualTo(0);
         assertThat(bean.getListProperty()).containsExactly("element1", "element2", "element3");
         assertThat(bean.getNested().getProp1()).isEqualTo("value");
+
+        String asString = factory.createAsString("fixture3", "fixture5");
+        assertThat(asString)
+                .isEqualTo("{\"listProperty\":[\"element1\",\"element2\",\"element3\"],\"nested\":{\"prop1\":\"value\"}}");
     }
 
 }

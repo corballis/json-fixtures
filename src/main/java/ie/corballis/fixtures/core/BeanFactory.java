@@ -74,19 +74,32 @@ public class BeanFactory {
 
     public <T> T create(
             Class<T> clazz,
-            String... fixturesNames) throws IllegalAccessException, InstantiationException, JsonProcessingException {
+            String... fixtureNames) throws IllegalAccessException, InstantiationException, JsonProcessingException {
 
-        if (fixturesNames.length == 0) {
+        if (fixtureNames.length == 0) {
             return clazz.newInstance();
         }
 
+        JsonNode result = mergeFixtures(fixtureNames);
+        return objectMapper.treeToValue(result, clazz);
+    }
+
+    public String createAsString(String... fixtureNames) {
+        if (fixtureNames.length == 0) {
+            return "{}";
+        }
+
+        JsonNode result = mergeFixtures(fixtureNames);
+        return result.toString();
+    }
+
+    private JsonNode mergeFixtures(String[] fixturesNames) {
         List<JsonNode> fixtureList = collectFixtures(fixturesNames);
         JsonNode result = fixtureList.remove(0).deepCopy();
         for (JsonNode node : fixtureList) {
             merge(result, node);
         }
-
-        return objectMapper.treeToValue(result, clazz);
+        return result;
     }
 
     private List<JsonNode> collectFixtures(String[] fixturesNames) {
