@@ -2,6 +2,7 @@ package ie.corballis.fixtures.assertion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import ie.corballis.fixtures.core.BeanFactory;
 import ie.corballis.fixtures.io.ClassPathFixtureScanner;
 import org.fest.assertions.api.AbstractAssert;
@@ -15,7 +16,7 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
 
     private static final BeanFactory beanFactory;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper;
 
     static {
         beanFactory = new BeanFactory(new ClassPathFixtureScanner());
@@ -28,6 +29,8 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
 
     public FixtureAssert(Object actual) {
         super(actual, FixtureAssert.class);
+        this.mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     public static FixtureAssert assertThat(Object actual) {
