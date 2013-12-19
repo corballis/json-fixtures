@@ -1,0 +1,42 @@
+<idea-plugin version="2">
+  <id>ie.corballis.json-fixtures</id>
+  <name>JSON Fixtures plugin</name>
+  <version>1.0</version>
+  <vendor email="info@corballis.ie" url="http://corballis.ie">Corballis Consulting Ltd.</vendor>
+
+  <description><![CDATA[
+      Plugin that displays information about JSON fixtures defined using the json-fixtures library.
+      ]]></description>
+
+  <change-notes><![CDATA[
+      ]]>
+  </change-notes>
+
+  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="107.105"/>
+
+  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products
+  <depends>com.intellij.modules.lang</depends>
+  -->
+
+  <application-components>
+    <!-- Add your application components here -->
+  </application-components>
+
+  <project-components>
+    <!-- Add your project components here -->
+      <component>
+          <implementation-class>ie.corballis.fixtures.intellij.JsonFixturesHighlightingPassFactory</implementation-class>
+      </component>
+  </project-components>
+
+  <actions>
+    <!-- Add your actions here -->
+  </actions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+  </extensions>
+</idea-plugin>

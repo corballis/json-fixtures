@@ -17,6 +17,7 @@
 
     <modules>
         <module>json-fixtures-lib</module>
+        <module>json-fixtures-intellij</module>
     </modules>
 
     <licenses>
