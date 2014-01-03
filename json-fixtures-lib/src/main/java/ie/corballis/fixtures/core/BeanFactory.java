@@ -2,6 +2,7 @@ package ie.corballis.fixtures.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -13,10 +14,12 @@ import ie.corballis.fixtures.io.FixtureScanner;
 import ie.corballis.fixtures.io.Resource;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -72,6 +75,12 @@ public class BeanFactory {
         fixtures.invalidate(name);
     }
 
+    public void unregisterAll(Collection<String> names) {
+        for (String name : names) {
+            fixtures.invalidate(name);
+        }
+    }
+
     public <T> T create(
             Class<T> clazz,
             String... fixtureNames) throws IllegalAccessException, InstantiationException, JsonProcessingException {
@@ -84,13 +93,27 @@ public class BeanFactory {
         return objectMapper.treeToValue(result, clazz);
     }
 
-    public String createAsString(String... fixtureNames) {
-        if (fixtureNames.length == 0) {
+    public <T> T create(JavaType type, String... fixtureNames) throws IOException {
+      checkArgument(fixtureNames.length > 0, "At least one fixture needs to be specified.");
+      String mergedString = createAsString(fixtureNames);
+      return objectMapper.readValue(mergedString, type);
+    }
+
+    public String createAsString(String... fixtureNames) throws JsonProcessingException {
+        return createAsString(false, newArrayList(fixtureNames));
+    }
+
+    public String createAsString(boolean pretty, String... fixtureNames) throws JsonProcessingException {
+        return createAsString(pretty, newArrayList(fixtureNames));
+    }
+
+    public String createAsString(boolean pretty, List<String> fixtureNames) throws JsonProcessingException {
+        if (fixtureNames.size() == 0) {
             return "{}";
         }
 
-        JsonNode result = mergeFixtures(fixtureNames);
-        return result.toString();
+        JsonNode result = mergeFixtures(fixtureNames.toArray(new String[fixtureNames.size()]));
+        return pretty ? objectMapper.writer().withDefaultPrettyPrinter().writeValueAsString(result) : result.toString();
     }
 
     private JsonNode mergeFixtures(String[] fixturesNames) {

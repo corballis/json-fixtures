@@ -1,10 +1,10 @@
 package ie.corballis.fixtures.annotation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import ie.corballis.fixtures.core.BeanFactory;
 import ie.corballis.fixtures.io.ClassPathFixtureScanner;
 import ie.corballis.fixtures.util.FieldSetter;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -49,7 +49,7 @@ public class FixtureAnnotations {
     @SuppressWarnings("unchecked")
     private static Object generateFixture(
             Annotation annotation, Field field,
-            BeanFactory beanFactory) throws IllegalAccessException, InstantiationException, JsonProcessingException {
+            BeanFactory beanFactory) throws IllegalAccessException, InstantiationException, IOException {
 
         Object result = null;
 
