@@ -1,6 +1,7 @@
 package ie.corballis.fixtures.annotation;
 
 import ie.corballis.fixtures.core.BeanFactory;
+import ie.corballis.fixtures.core.ObjectMapperProvider;
 import ie.corballis.fixtures.io.ClassPathFixtureScanner;
 import ie.corballis.fixtures.util.FieldSetter;
 
@@ -23,7 +24,7 @@ public class FixtureAnnotations {
     public static void initFixtures(Object targetInstance) throws Exception {
         checkNotNull(targetInstance, "Target instance must not be null");
 
-        BeanFactory beanFactory = new BeanFactory(new ClassPathFixtureScanner());
+        BeanFactory beanFactory = new BeanFactory(ObjectMapperProvider.getObjectMapper(), new ClassPathFixtureScanner());
         beanFactory.init();
 
         processAnnotations(targetInstance, beanFactory);

@@ -27,26 +27,26 @@ public class BeanFactory {
 
     private ObjectMapper objectMapper;
     private FixtureScanner scanner;
-    private FixtureReader reader = new DefaultFixtureReader();
+    private FixtureReader reader;
 
     private Cache<String, JsonNode> fixtures = CacheBuilder.newBuilder().build();
 
     public BeanFactory() {
-        this.objectMapper = new ObjectMapper();
+        this((FixtureScanner) null);
     }
 
     public BeanFactory(FixtureScanner scanner) {
-        this.objectMapper = new ObjectMapper();
-        this.scanner = scanner;
+        this(new ObjectMapper(), scanner);
     }
 
     public BeanFactory(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+        this(objectMapper, null);
     }
 
     public BeanFactory(ObjectMapper objectMapper, FixtureScanner scanner) {
         this.objectMapper = objectMapper;
         this.scanner = scanner;
+        this.reader = new DefaultFixtureReader(objectMapper);
     }
 
     public void init() throws IOException {

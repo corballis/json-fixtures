@@ -1,9 +1,8 @@
 package ie.corballis.fixtures.assertion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import ie.corballis.fixtures.core.BeanFactory;
+import ie.corballis.fixtures.core.ObjectMapperProvider;
 import ie.corballis.fixtures.io.ClassPathFixtureScanner;
 import org.fest.assertions.api.AbstractAssert;
 import org.hamcrest.MatcherAssert;
@@ -16,10 +15,8 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
 
     private static final BeanFactory beanFactory;
 
-    private ObjectMapper mapper;
-
     static {
-        beanFactory = new BeanFactory(new ClassPathFixtureScanner());
+        beanFactory = new BeanFactory(ObjectMapperProvider.getObjectMapper(), new ClassPathFixtureScanner());
         try {
             beanFactory.init();
         } catch (IOException e) {
@@ -29,8 +26,6 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
 
     public FixtureAssert(Object actual) {
         super(actual, FixtureAssert.class);
-        this.mapper = new ObjectMapper();
-        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     public static FixtureAssert assertThat(Object actual) {
@@ -40,7 +35,7 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
     public FixtureAssert matches(String... fixtures) throws JsonProcessingException {
         isNotNull();
 
-        MatcherAssert.assertThat(mapper.writeValueAsString(actual),
+        MatcherAssert.assertThat(ObjectMapperProvider.getObjectMapper().writeValueAsString(actual),
                                  sameJSONAs(beanFactory.createAsString(fixtures)).allowingAnyArrayOrdering()
                                          .allowingExtraUnexpectedFields());
 
@@ -50,7 +45,7 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
     public FixtureAssert matchesWithStrictOrder(String... fixtures) throws JsonProcessingException {
         isNotNull();
 
-        MatcherAssert.assertThat(mapper.writeValueAsString(actual),
+        MatcherAssert.assertThat(ObjectMapperProvider.getObjectMapper().writeValueAsString(actual),
                                  sameJSONAs(beanFactory.createAsString(fixtures)).allowingExtraUnexpectedFields());
 
         return this;
@@ -59,7 +54,7 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
     public FixtureAssert matchesExactly(String... fixtures) throws JsonProcessingException {
         isNotNull();
 
-        MatcherAssert.assertThat(mapper.writeValueAsString(actual),
+        MatcherAssert.assertThat(ObjectMapperProvider.getObjectMapper().writeValueAsString(actual),
                                  sameJSONAs(beanFactory.createAsString(fixtures)).allowingAnyArrayOrdering());
 
         return this;
@@ -68,7 +63,7 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
     public FixtureAssert matchesExactlyWithStrictOrder(String... fixtures) throws JsonProcessingException {
         isNotNull();
 
-        MatcherAssert.assertThat(mapper.writeValueAsString(actual),
+        MatcherAssert.assertThat(ObjectMapperProvider.getObjectMapper().writeValueAsString(actual),
                                  sameJSONAs(beanFactory.createAsString(fixtures)));
 
         return this;
