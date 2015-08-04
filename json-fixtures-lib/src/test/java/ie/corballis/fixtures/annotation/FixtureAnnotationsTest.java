@@ -24,6 +24,12 @@ public class FixtureAnnotationsTest {
     @Fixture("fixture6")
     private List<MyBean> beanList;
 
+    @Fixture
+    private MyBean fixture1; // should contain the same data as bean1
+
+    @Fixture
+    private List<MyBean> fixture6; // should contain the same data as beanList
+
     @Test
     public void shouldInitializeBeans() throws Exception {
         FixtureAnnotations.initFixtures(this);
@@ -48,5 +54,23 @@ public class FixtureAnnotationsTest {
         assertThat(beanList.get(1).getIntProperty()).isEqualTo(2);
         assertThat(beanList.get(2).getStringProperty()).isEqualTo("property3");
         assertThat(beanList.get(2).getIntProperty()).isEqualTo(3);
+    }
+
+    @Test
+     public void defaultFixtureNames() throws Exception {
+        FixtureAnnotations.initFixtures(this);
+
+        assertThat(fixture1).isNotNull();
+        assertThat(fixture1.getStringProperty()).isEqualTo("property");
+        assertThat(fixture1.getIntProperty()).isEqualTo(1);
+
+        assertThat(fixture6).isNotNull();
+        assertThat(fixture6).hasSize(3);
+        assertThat(fixture6.get(0).getStringProperty()).isEqualTo("property1");
+        assertThat(fixture6.get(0).getIntProperty()).isEqualTo(1);
+        assertThat(fixture6.get(1).getStringProperty()).isEqualTo("property2");
+        assertThat(fixture6.get(1).getIntProperty()).isEqualTo(2);
+        assertThat(fixture6.get(2).getStringProperty()).isEqualTo("property3");
+        assertThat(fixture6.get(2).getIntProperty()).isEqualTo(3);
     }
 }

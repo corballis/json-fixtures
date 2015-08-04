@@ -21,6 +21,10 @@ public class FixtureFieldAnnotationProcessor implements FieldAnnotationProcessor
         String[] fixtures = annotation.value();
         Class<?> fieldType = field.getType();
 
+        if(fixtures.length == 0){ // the default name should be the name of the field
+            fixtures = new String[] { field.getName() };
+        }
+
         if (Collection.class.isAssignableFrom(fieldType) && field.getGenericType() instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
             Type fieldArgType = parameterizedType.getActualTypeArguments()[0];

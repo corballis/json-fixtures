@@ -85,18 +85,15 @@ public class BeanFactory {
             Class<T> clazz,
             String... fixtureNames) throws IllegalAccessException, InstantiationException, JsonProcessingException {
 
-        if (fixtureNames.length == 0) {
-            return clazz.newInstance();
-        }
-
+        checkArgument(fixtureNames.length > 0, "At least one fixture needs to be specified.");
         JsonNode result = mergeFixtures(fixtureNames);
         return objectMapper.treeToValue(result, clazz);
     }
 
     public <T> T create(JavaType type, String... fixtureNames) throws IOException {
-      checkArgument(fixtureNames.length > 0, "At least one fixture needs to be specified.");
-      String mergedString = createAsString(fixtureNames);
-      return objectMapper.readValue(mergedString, type);
+        checkArgument(fixtureNames.length > 0, "At least one fixture needs to be specified.");
+        String mergedString = createAsString(fixtureNames);
+        return objectMapper.readValue(mergedString, type);
     }
 
     public String createAsString(String... fixtureNames) throws JsonProcessingException {
