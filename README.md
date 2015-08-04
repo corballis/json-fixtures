@@ -104,18 +104,6 @@ private List<String> cities;
 }
 ```
 
-### How to tell the library to process the annotations
-If you want to use the fields that you have previously annotated with `@Fixture`, you have to *initialize* Fixtures. Use the library's access method for it: `FixtureAnnotations.initFixtures()`.
-As it's the initialization process that sets the `@Fixture`-d fields, initialization must happen prior to their usage. Therefore -- if you are working with jUnit -- it's worth initializing in a method annotated with `org.junit.Before`, so it gets executed before every unit test, and always resets the field fixture values:
-
-```java
-@Before
-public void init() throws Exception {
-	FixtureAnnotations.initFixtures(this);
-}
-```
-The parameter of the method is a not-null instance of the class that contains the `@Fixture`-d fields. If the initialization is in the same class as these fields, let the parameter value be `this`.
-
 ### **_Feature_**: default fixture name
 If you specify no fixture name(s) for the `@Fixture` annotation as parameter(s), the field annotation processor takes the field's name as the "default" fixture name.
 Therefore, if you are satisfied with the field name being equal to the fixture name, you needn't write anything after `@Fixture`.
@@ -128,6 +116,27 @@ private Car car;
 ```java
 @Fixture
 private Car car;
+```
+
+### **_Feature_**: `@Fixture`-annotated fields of superclasses
+
+The field annotation processor looks for the `@Fixture`-annotated fields not only among the declared fields of the *actual* test class, but also among those of its superclasses.
+So if you extend a test class (`B`) from another one (`A`), where `A` declares a `@Fixture`-d field (`AField`),
+then -- as long as `B` is able to *access* `AField` -- it can also access its data content.
+
+```java
+public class A {
+    @Fixture
+    protected MyBean AField;
+	(...)
+}
+public class B extends A {
+    @Test
+    public void testFieldOfSuperclass() {
+        assertThat(AField).isNotNull();
+        assertThat(AField). (...)
+    }
+}
 ```
 
 ### **_Feature_**: how to **merge** the contents of separate fixtures into one field
@@ -163,6 +172,19 @@ private Car car1;
 private Car car2;
 ```
 
+### How to tell the library to process the annotations
+If you want to use the fields that you have previously annotated with `@Fixture`, you have to *initialize* Fixtures. Use the library's access method for it: `FixtureAnnotations.initFixtures()`.
+As it's the initialization process that sets the `@Fixture`-d fields, initialization must happen prior to their usage. Therefore -- if you are working with jUnit -- it's worth initializing in a method annotated with `org.junit.Before`, so it gets executed before every unit test, and always resets the field fixture values:
+
+```java
+@Before
+public void init() throws Exception {
+	FixtureAnnotations.initFixtures(this);
+}
+```
+The parameter of the method is a not-null instance of the class that contains the `@Fixture`-d fields. If the initialization is in the same class as these fields, let the parameter value be `this`.
+
+
 #### **_Additional information_**:<br/>how to set an own object mapper
 The way JSON Fixtures reads up the JSON files rests on [Jackson](https://github.com/FasterXML/jackson) library. It uses Jackson's `ObjectMapper` class for this purpose. JSON Fixtures configures its object mapper with only one characteristic:
 ```java
@@ -173,7 +195,8 @@ However, you might want to use your own object mapper with your pre-set custom c
 ```java
 ObjectMapperProvider.setObjectMapper(ownMapper);
 ```
->Warning: if you choose to use the default object mapper, your bean classes (e.g. class `Car` in the example above) must declare getters for those fields that you use in fixtures!
+>Warning: if you choose to use the default object mapper, your bean classes (e.g. class `Car` in the example above) must declare getters, at least for those fields that the fixtures really use!
+
 ## **Main feature 2**:<br/>The library's four handy assertion methods
 The library's other main feature is four assertion methods.
 They are the instance methods of class `FixtureAssert`.
@@ -191,7 +214,7 @@ allows any array ordering, but no extra unexpected fields;
  4. `matchesExactlyWithStrictOrder(String... fixtures)`:
 allows only strict array ordering and no extra unexpected fields.
 
-#### Example for usage:
+#### Example of usage:
 ```java
 import static ie.corballis.fixtures.assertion.FixtureAssert.assertThat;
 (...)

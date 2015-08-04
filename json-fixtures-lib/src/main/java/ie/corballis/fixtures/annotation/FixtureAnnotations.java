@@ -31,19 +31,23 @@ public class FixtureAnnotations {
     }
 
     private static void processAnnotations(Object targetInstance, BeanFactory beanFactory) throws Exception {
-        Field[] fields = targetInstance.getClass().getDeclaredFields();
-        for (Field field : fields) {
-            for (Annotation annotation : field.getAnnotations()) {
-                Object bean = generateFixture(annotation, field, beanFactory);
-                if (bean != null) {
-                    try {
-                        new FieldSetter(targetInstance, field).set(bean);
-                    } catch (Exception e) {
-                        throw new Exception("Problems setting field " + field.getName() + " annotated with "
-                                                    + annotation, e);
+        Class clazz = targetInstance.getClass();
+        while(clazz != null) {
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field field : fields) {
+                for (Annotation annotation : field.getAnnotations()) {
+                    Object bean = generateFixture(annotation, field, beanFactory);
+                    if (bean != null) {
+                        try {
+                            new FieldSetter(targetInstance, field).set(bean);
+                        } catch (Exception e) {
+                            throw new Exception("Problems setting field " + field.getName() + " annotated with "
+                                    + annotation, e);
+                        }
                     }
                 }
             }
+            clazz = clazz.getSuperclass();
         }
     }
 
