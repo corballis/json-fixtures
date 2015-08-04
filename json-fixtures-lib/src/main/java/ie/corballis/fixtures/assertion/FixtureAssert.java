@@ -5,7 +5,9 @@ import ie.corballis.fixtures.core.BeanFactory;
 import ie.corballis.fixtures.core.ObjectMapperProvider;
 import ie.corballis.fixtures.io.ClassPathFixtureScanner;
 import org.fest.assertions.api.AbstractAssert;
+import org.fest.assertions.api.Assertions;
 import org.hamcrest.MatcherAssert;
+import uk.co.datumedge.hamcrest.json.SameJSONAs;
 
 import java.io.IOException;
 
@@ -32,40 +34,37 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
         return new FixtureAssert(actual);
     }
 
-    public FixtureAssert matches(String... fixtures) throws JsonProcessingException {
+    private void assertJSON(SameJSONAs<? super String> expected, String... fixtures) throws JsonProcessingException {
         isNotNull();
+        try {
+            MatcherAssert.assertThat(ObjectMapperProvider.getObjectMapper().writeValueAsString(actual), expected);
+        } catch(AssertionError assertionError){
+            String actualPrettyString = ObjectMapperProvider.getObjectMapper().writer().withDefaultPrettyPrinter()
+                    .writeValueAsString(actual);
+            String expectedPrettyString = beanFactory.createAsString(true, fixtures);
+            System.err.print(assertionError.getMessage());
+            Assertions.assertThat(actualPrettyString).isEqualTo(expectedPrettyString);
+        }
+    }
 
-        MatcherAssert.assertThat(ObjectMapperProvider.getObjectMapper().writeValueAsString(actual),
-                                 sameJSONAs(beanFactory.createAsString(fixtures)).allowingAnyArrayOrdering()
-                                         .allowingExtraUnexpectedFields());
-
+    public FixtureAssert matches(String... fixtures) throws JsonProcessingException {
+        assertJSON(sameJSONAs(beanFactory.createAsString(fixtures)).allowingAnyArrayOrdering()
+                .allowingExtraUnexpectedFields(), fixtures);
         return this;
     }
 
     public FixtureAssert matchesWithStrictOrder(String... fixtures) throws JsonProcessingException {
-        isNotNull();
-
-        MatcherAssert.assertThat(ObjectMapperProvider.getObjectMapper().writeValueAsString(actual),
-                                 sameJSONAs(beanFactory.createAsString(fixtures)).allowingExtraUnexpectedFields());
-
+        assertJSON(sameJSONAs(beanFactory.createAsString(fixtures)).allowingExtraUnexpectedFields(), fixtures);
         return this;
     }
 
     public FixtureAssert matchesExactly(String... fixtures) throws JsonProcessingException {
-        isNotNull();
-
-        MatcherAssert.assertThat(ObjectMapperProvider.getObjectMapper().writeValueAsString(actual),
-                                 sameJSONAs(beanFactory.createAsString(fixtures)).allowingAnyArrayOrdering());
-
+        assertJSON(sameJSONAs(beanFactory.createAsString(fixtures)).allowingAnyArrayOrdering(), fixtures);
         return this;
     }
 
     public FixtureAssert matchesExactlyWithStrictOrder(String... fixtures) throws JsonProcessingException {
-        isNotNull();
-
-        MatcherAssert.assertThat(ObjectMapperProvider.getObjectMapper().writeValueAsString(actual),
-                                 sameJSONAs(beanFactory.createAsString(fixtures)));
-
+        assertJSON(sameJSONAs(beanFactory.createAsString(fixtures)), fixtures);
         return this;
     }
 }
