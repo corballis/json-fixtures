@@ -116,6 +116,19 @@ public void init() throws Exception {
 ```
 The parameter of the method is a not-null instance of the class that contains the `@Fixture`-d fields. If the initialization is in the same class as these fields, let the parameter value be `this`.
 
+### **_Feature_**: default fixture name
+If you specify no fixture name(s) for the `@Fixture` annotation as parameter(s), the field annotation processor takes the field's name as the "default" fixture name.
+Therefore, if you are satisfied with the field name being equal to the fixture name, you needn't write anything after `@Fixture`.
+**Example** - the following two solutions are equivalent (and, of course, they both are correct):
+```java
+@Fixture("car")
+private Car car;
+```
+```java
+@Fixture
+private Car car;
+```
+
 ### **_Feature_**: how to **merge** the contents of separate fixtures into one field
 
 Let's see a type that contains three fields:
@@ -123,10 +136,10 @@ Let's see a type that contains three fields:
 public class Car {
 	private int age;
 	private String color;
-	private int ID;
+	private int id;
 }
 ```
-If you only work with 6-year-old black cars in your tests, and it's only the ID that has to vary between the instances, you don't need to copy the `age + color` part into every single JSON fixture. In this case you can use a convenient JSON Fixture feature called `merging`.
+If you only work with 6-year-old black cars in your tests, and it's only the id that has to vary between the instances, you don't need to copy the `age + color` part into every single JSON fixture. In this case you can use a convenient JSON Fixture feature called `merging`.
 
 `Merging` permits that the parts of the data that finally makes up a Java object may be located in different places in the JSON resource. If you specify this right after the `@Fixture` annotation, JSON Fixtures performs the merging. Thus certain parts of the JSON fixture files may be written only once, but reused several times.
 
@@ -137,15 +150,15 @@ As an example, let's declare the `age + color` stem in the fixture only once, an
 		"age":6,
 		"color":"black"
 	},
-	"car1":{"ID":1},
-	"car2":{"ID":2}
+	"car1":{"id":1},
+	"car2":{"id":2}
 }
 ```
 Now these fixtures may be used in the Java code as follows:
 ```java
-@Fixture("stem","car1")
+@Fixture({"stem","car1"})
 private Car car1;
-@Fixture("stem","car2")
+@Fixture({"stem","car2"})
 private Car car2;
 ```
 
@@ -159,6 +172,7 @@ However, you might want to use your own object mapper with your pre-set custom c
 ```java
 ObjectMapperProvider.setObjectMapper(ownMapper);
 ```
+>Warning: if you choose to use the default object mapper, your bean classes (e.g. class `Car` in the example above) must declare getters for those fields that you use in fixtures!
 ## **Main feature 2**:<br/>The library's four handy assertion methods
 The library's other main feature is four assertion methods.
 They are the instance methods of class `FixtureAssert`.
