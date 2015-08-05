@@ -3,6 +3,10 @@ JSON Test Fixture library for Java [![Build Status](https://travis-ci.org/szmeti
 #Documentation for <br/>**JSON Fixtures** library
 `JSON Fixtures` is an open-source Java library that enables us, Java developers and testers, to test our applications quickly and easily, using fixtures that we have prepared in JSON format.
 
+>**Fixture** (according to [Wikipedia](https://en.wikipedia.org/wiki/Test_fixture#Software)):
+"In software testing, a test fixture is a fixed state of the software under test used as a baseline for running tests."
+**JSON fixture**: a set of data for testing some code, given in JSON format.
+
 The library provides two main features:
 
 - it builds Java objects from JSON fixture files for testing Java applications easily, with the use of only a few annotations;
@@ -27,7 +31,7 @@ One main feature of the library is that it can detect JSON fixture files on the 
 If you want a JSON file to be recognized as a possible fixture resource, its name + extension must end in ".fixtures.json" (e.g. "cities.fixtures.json"). Locate your JSON fixture resources on the project's classpath, preferably in folder `src/main/test/resources`.
 
 The library supports both simple bean objects and collections; beans can also contain nested fields.
-Example: the below JSONs are all correct, and each one could be wrapped to the Java types following it:
+Example: the below JSONs are all correct, and each one could be wrapped to the Java type following it:
 
  - A simple bean object (with primitive fields):
 
