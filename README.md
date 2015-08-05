@@ -5,7 +5,8 @@ JSON Test Fixture library for Java [![Build Status](https://travis-ci.org/szmeti
 
 >**Fixture** (according to [Wikipedia](https://en.wikipedia.org/wiki/Test_fixture#Software)):
 "In software testing, a test fixture is a fixed state of the software under test used as a baseline for running tests."
-**JSON fixture**: a set of data for testing some code, given in JSON format.
+
+>**JSON fixture**: a set of data for testing some code, given in JSON format.
 
 The library provides two main features:
 
