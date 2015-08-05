@@ -177,6 +177,13 @@ private Car car1;
 private Car car2;
 ```
 
+If we (having previously generated `toString()` for class `Car`, and initialized *Fixtures*, see [below](https://github.com/corballis/json-fixtures#how-to-tell-the-library-to-process-the-annotations))
+now print the `car1`, `car2` objects, we should receive the following output:
+```java
+Car{age=6, color='black', id=1}
+Car{age=6, color='black', id=2}
+```
+
 ### How to tell the library to process the annotations
 If you want to use the fields that you have previously annotated with `@Fixture`, you have to *initialize* Fixtures. Use the library's access method for it: `FixtureAnnotations.initFixtures()`.
 As it's the initialization process that sets the `@Fixture`-d fields, initialization must happen prior to their usage. Therefore -- if you are working with jUnit -- it's worth initializing in a method annotated with `org.junit.Before`, so it gets executed before every unit test, and always resets the field fixture values:
