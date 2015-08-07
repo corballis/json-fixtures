@@ -19,24 +19,9 @@ public class GeneratorTest {
     private static final boolean append = true;
 
     @Test
-    public void generateJsonStringFromBean() throws Exception {
-        DefaultFixtureGenerator defaultFixtureGenerator = new DefaultFixtureGenerator();
-        String jsonString = defaultFixtureGenerator.generateJsonStringFromBean(SampleClassCollections.class);
-        System.out.println(jsonString);
-    }
-
-    @Test
     public void generateMapFromBeanDirectly() throws Exception {
         DefaultFixtureGenerator defaultFixtureGenerator = new DefaultFixtureGenerator();
         Map<String, Object> map = defaultFixtureGenerator.generateMapFromBeanDirectly(SampleClassCollections.class);
-        testMap(map);
-    }
-
-    @Test
-    public void generateMapFromBeanThroughJsonString() throws Exception {
-        DefaultFixtureGenerator defaultFixtureGenerator = new DefaultFixtureGenerator();
-        Map<String, Object> map =
-            defaultFixtureGenerator.generateMapFromBeanThroughJsonString(SampleClassCollections.class);
         testMap(map);
     }
 

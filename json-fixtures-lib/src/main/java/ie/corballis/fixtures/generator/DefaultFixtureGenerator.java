@@ -1,14 +1,11 @@
 package ie.corballis.fixtures.generator;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Defaults;
 import com.google.common.primitives.Primitives;
 import ie.corballis.fixtures.core.ObjectMapperProvider;
 import ie.corballis.fixtures.util.FieldReader;
 import ie.corballis.fixtures.util.FieldSetter;
 
-import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -19,23 +16,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class DefaultFixtureGenerator implements FixtureGenerator {
     @Override
-    public String generateJsonStringFromBean(Class clazz) throws Exception {
-        checkNotNull(clazz, "The target class may not be null!");
-        Object instance = createBeanInstance(clazz);
-        return generatePrettyJsonString(instance);
-    }
-
-    @Override
     public Map<String, Object> generateMapFromBeanDirectly(Class clazz) throws Exception {
         checkNotNull(clazz, "The target class may not be null!");
         Object instance = createBeanInstance(clazz);
         return generateMap(instance);
-    }
-
-    @Override
-    public Map<String, Object> generateMapFromBeanThroughJsonString(Class clazz) throws Exception {
-        String jsonString = generateJsonStringFromBean(clazz);
-        return generateMapFromJsonString(jsonString);
     }
 
     public Object createBeanInstance(Class clazz) throws Exception {
@@ -86,16 +70,7 @@ public class DefaultFixtureGenerator implements FixtureGenerator {
         }
     }
 
-    private String generatePrettyJsonString(Object instance) throws JsonProcessingException {
-        ObjectMapper objectMapper = ObjectMapperProvider.getObjectMapper();
-        return objectMapper.writer().withDefaultPrettyPrinter().writeValueAsString(instance);
-    }
-
     private Map<String, Object> generateMap(Object instance) {
         return ObjectMapperProvider.getObjectMapper().convertValue(instance, Map.class);
-    }
-
-    private Map<String, Object> generateMapFromJsonString(String jsonString) throws IOException {
-        return ObjectMapperProvider.getObjectMapper().readValue(jsonString, Map.class);
     }
 }
