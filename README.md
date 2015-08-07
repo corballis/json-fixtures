@@ -198,16 +198,54 @@ The parameter of the method is a not-null instance of the class that contains th
 
 
 #### **_Additional information_**:<br/>how to set an own object mapper
-The way JSON Fixtures reads up the JSON files rests on [Jackson](https://github.com/FasterXML/jackson) library. It uses Jackson's `ObjectMapper` class for this purpose. JSON Fixtures configures its object mapper with only one characteristic:
+The way JSON Fixtures reads up the JSON files rests on [Jackson](https://github.com/FasterXML/jackson) library. It uses Jackson's `ObjectMapper` class for this purpose. JSON Fixtures configures its object mapper with only two basic characteristics:
 ```java
-objectMapper.configure(SerializationFeature.
-WRITE_DATES_AS_TIMESTAMPS, false);
+objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 ```
-However, you might want to use your own object mapper with your pre-set custom configuration instead. -- For this, perform the following static method call:
+
+The first configuration makes the object mapper write dates as timestamps (e.g. `2015-08-07T09:35:07.903+0000`) instead of the default long values.
+
+The second one means that the object mapper should access every field, let its visibility modifier be anything.
+
+This gives you two important advantages:
+ - You don't definitely need to declare getters/setters for the fields you use from the fixtures - the object mapper will still access them, even if they are private/protected.
+ - Let's say you have a bean that inherits some fields from its superclass. You can write inherited fields (just as not inherited ones) into the fixture, as well, - the object mapper will fill *all existing* fields of the subclass object with the specified values properly.
+ 
+**Example**: let's say we have two beans - `A` and `B` -, where `B` extends `A`.
+Let both beans declare a protected field (`a` and `b`).
+Let B declare a `toString()`, which prints both its inherited and not inherited field.
+```java
+public class A {
+	protected int a;
+}
+public class B extends A {
+	protected int b;
+	@Override
+	public String toString(){
+		return "a = " + a + ", b = " + b;
+	}
+}
+```
+Now let's prepare a JSON fixture that describes a B instance, and contains both the `a` and `b` values:
+```json
+{
+	"myBInstance":{
+		"a":5,
+		"b":6
+	}
+}
+```
+Loading this fixture into a Java object, invoking its `toString()` should result the following output:
+```java
+a = 5, b = 6
+```
+So thanks to this setting, also the inherited fields can be used properly from the fixtures.
+
+**However**, you might want to use your **own** object mapper with your pre-set custom configuration instead. - For this, perform the following static method call:
 ```java
 ObjectMapperProvider.setObjectMapper(ownMapper);
 ```
->Warning: if you choose to use the default object mapper, your bean classes (e.g. class `Car` in the example above) must declare getters, at least for those fields that the fixtures really use!
 
 ## **Main feature 2**:<br/>The library's four handy assertion methods
 The library's other main feature is four assertion methods.
