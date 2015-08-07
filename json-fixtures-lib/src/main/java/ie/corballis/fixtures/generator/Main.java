@@ -25,7 +25,6 @@ public class Main {
 
         System.out.println("Absolute path of folder for generating the new fixture file:");
         folder = scanner.nextLine();
-        // e.g. "classpath:"
 
         System.out.println("Prefix of file name to generate the new fixture file with):");
         fileNamePrefix = scanner.nextLine();
