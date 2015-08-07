@@ -1,0 +1,6 @@
+expected:<...perty" : "property2"[]
+}'> but was:<...perty" : "property2"[,
+  "intProperty" : 1,
+  "listProperty" : null,
+  "nested" : null]
+}'>

@@ -3,9 +3,16 @@ package ie.corballis.fixtures.assertion;
 import ie.corballis.fixtures.annotation.Fixture;
 import ie.corballis.fixtures.annotation.FixtureAnnotations;
 import ie.corballis.fixtures.core.MyBean;
+import org.apache.commons.io.FileUtils;
 import org.fest.assertions.api.Assertions;
 import org.junit.Before;
+import org.junit.ComparisonFailure;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -46,11 +53,8 @@ public class FixtureAssertTest {
         try {
             FixtureAssert.assertThat(bean).matches("fixture1");
             Assertions.fail("Should have failed");
-        } catch (AssertionError e) {
-            Assertions.assertThat(e.getMessage()).isEqualTo(
-                    "\n" +
-                            "Expected: \"{\\\"stringProperty\\\":\\\"property\\\",\\\"intProperty\\\":1}\"\n" +
-                            "     but: field stringProperty was \"property2\" instead of \"property\"");
+        } catch (ComparisonFailure e) {
+            assertFailureMessage(e, "expectedMessage1");
         }
     }
 
@@ -64,11 +68,8 @@ public class FixtureAssertTest {
         try {
             bean.setListProperty(newArrayList("element2", "element1", "element3"));
             FixtureAssert.assertThat(bean).matchesWithStrictOrder("fixture1", "fixture2", "fixture3");
-        } catch (AssertionError e) {
-            Assertions.assertThat(e.getMessage()).isEqualTo(
-                    "\n" +
-                            "Expected: \"{\\\"stringProperty\\\":\\\"property2\\\",\\\"intProperty\\\":1,\\\"listProperty\\\":[\\\"element1\\\",\\\"element2\\\",\\\"element3\\\"]}\"\n" +
-                            "     but: field listProperty[0] was \"element2\" instead of \"element1\" and field listProperty[1] was \"element1\" instead of \"element2\"");
+        } catch (ComparisonFailure e) {
+            assertFailureMessage(e, "expectedMessage2");
         }
     }
 
@@ -82,16 +83,8 @@ public class FixtureAssertTest {
         try {
             FixtureAssert.assertThat(bean).matchesExactly("fixture2");
             Assertions.fail("Should have failed");
-        } catch (AssertionError e) {
-            Assertions.assertThat(e.getMessage()).isEqualTo(
-                    "\n" +
-                            "Expected: \"{\\\"stringProperty\\\":\\\"property2\\\"}\"\n" +
-                            "     but: \n" +
-                            "Unexpected: intProperty\n" +
-                            " ; \n" +
-                            "Unexpected: listProperty\n" +
-                            " ; \n" +
-                            "Unexpected: nested\n");
+        } catch (ComparisonFailure e) {
+            assertFailureMessage(e, "expectedMessage3");
         }
     }
 
@@ -111,34 +104,31 @@ public class FixtureAssertTest {
         try {
             FixtureAssert.assertThat(bean).matchesExactlyWithStrictOrder("fixture2");
             Assertions.fail("Should have failed");
-        } catch (AssertionError e) {
-            Assertions.assertThat(e.getMessage()).isEqualTo(
-                    "\n" +
-                            "Expected: \"{\\\"stringProperty\\\":\\\"property2\\\"}\"\n" +
-                            "     but: \n" +
-                            "Unexpected: intProperty\n" +
-                            " ; \n" +
-                            "Unexpected: listProperty\n" +
-                            " ; \n" +
-                            "Unexpected: nested\n");
+        } catch (ComparisonFailure e) {
+            assertFailureMessage(e, "expectedMessage3");
         }
     }
 
     @Test
-    public void matchesExactlyWithStrictOrder_doesNotAllowAnyOrdering() throws Exception {
+    public void matchesExactlyWithStrictOrder_doesNotAllowAnyOrdering() throws URISyntaxException, IOException {
         try {
             bean3.setListProperty(newArrayList("element2", "element1", "element3"));
-            FixtureAssert.assertThat(bean3).matchesExactlyWithStrictOrder("fixture1", "fixture2", "fixture3", "fixture5");
-        } catch (AssertionError e) {
-            Assertions.assertThat(e.getMessage()).isEqualTo(
-                    "\n" +
-                            "Expected: \"{\\\"stringProperty\\\":\\\"property2\\\",\\\"intProperty\\\":1,\\\"listProperty\\\":[\\\"element1\\\",\\\"element2\\\",\\\"element3\\\"],\\\"nested\\\":{\\\"prop1\\\":\\\"value\\\"}}\"\n" +
-                            "     but: field listProperty[0] was \"element2\" instead of \"element1\" and field listProperty[1] was \"element1\" instead of \"element2\"");
+            FixtureAssert.assertThat(bean3)
+                         .matchesExactlyWithStrictOrder("fixture1", "fixture2", "fixture3", "fixture5");
+        } catch (ComparisonFailure e) {
+            assertFailureMessage(e, "expectedMessage4");
         }
     }
 
     @Test
     public void matchesExactlyWithStrictOrder_matches() throws Exception {
         FixtureAssert.assertThat(bean3).matchesExactlyWithStrictOrder("fixture1", "fixture2", "fixture3", "fixture5");
+    }
+
+    private void assertFailureMessage(ComparisonFailure e, String relativePath) throws URISyntaxException,
+                                                                                        IOException {
+        URI uri = getClass().getClassLoader().getResource(relativePath).toURI();
+        String expectedMessage = FileUtils.readFileToString(new File(uri));
+        Assertions.assertThat(e.getMessage()).isEqualTo(expectedMessage);
     }
 }
