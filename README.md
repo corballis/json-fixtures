@@ -271,7 +271,7 @@ You have to give it the following parameters:
  2. **The absolute path of the folder**: the absolute path of the folder you want the newly generated file to be located in.
  <br/>E.g. `D://workspace/myProject/src/main/test/resources`.
  <br/>It's worth locating the generated fixture file on the project's classpath, preferably in folder `resources`:
- this is how the library will [recognize](https://github.com/corballis/json-fixtures#how-to-prepare-the-json-fixture-files)
+ this is how the library will [recognize](https://github.com/corballis/json-fixtures#how-you-should-prepare-the-json-fixture-files)
  it when you later want to [reload](https://github.com/corballis/json-fixtures#how-to-use-the-fixture-annotation) its content into a `@Fixture`-d field.
  
  3. **The prefix of the file name**: the string (without quotation marks) you want to see before the ".fixtures.json" ending.
@@ -292,6 +292,7 @@ You have to give it the following parameters:
   <br/>Then, if its value is `true`, there can be two cases:
   - no fixture exists in the file with the specified fixture name - then the new fixture will be appended to the end of the file;
   - there already is a fixture in the file with the specified fixture name - then, to avoid confusion or data loss, an exception is thrown.
+  
   If the parameter's value is `false`, an exception is thrown to indicate "The fixture file already exists,
   but the user didn't allow appending the new fixture to its end, so nothing could have been executed!".
 
@@ -309,6 +310,8 @@ The "default" values are the following:
 
  1. If a field is initialized from source code (e.g. `private int a = 6;`), then the default value is the initialization value.
  2. If a field is *not* initialized from source code (e.g. `private int a;`), then the following rules are applied:
+ 
+ --------------- | -------------------
   primitive type | the default value of the type (e.g. `short` - `0`, `char` - `\u0000`, `boolean` - `false` etc.)
   wrapper type | the default value of the corresponding primitive type (e.g. `Integer` - `0`)
   array | a new empty array
@@ -342,7 +345,7 @@ public class Sample2 extends Sample1 {
 
 Now let's generate a new fixture of `Sample2`, the way documented [above](https://github.com/corballis/json-fixtures#how-to-generate-a-fixture-file), with fixture name `sample2`!
 
-If no file with the folder and name we gave existed before, the content of the generated file should be:
+If no file in the folder and with the filename we gave existed before, the content of the generated file should be:
 ```json
 {
   "sample2" : {
@@ -358,11 +361,11 @@ If no file with the folder and name we gave existed before, the content of the g
 }
 ```
 
->Note: when generating the file, the fields of the bean's *superclass* (here `Sample1`) are also regarded!
+>Note: when the file is generated, the fields of the bean's *superclass* (here `Sample1`) are also regarded!
 
 From now, we can modify the values in the file (e.g. rewrite `myString` to some other string), and
 [use](https://github.com/corballis/json-fixtures#how-to-use-the-fixture-annotation) the fixture from
-any test class just like we would do it with any other ordinary fixture:
+any test class, just like we would do it with any other ordinary fixture:
 ```java
 @Fixture
 private Sample2 sample2;
