@@ -311,15 +311,16 @@ The "default" values are the following:
  1. If a field is initialized from source code (e.g. `private int a = 6;`), then the default value is the initialization value.
  2. If a field is *not* initialized from source code (e.g. `private int a;`), then the following rules are applied:
  
- --------------- | -------------------
-  primitive type | the default value of the type (e.g. `short` - `0`, `char` - `\u0000`, `boolean` - `false` etc.)
-  wrapper type | the default value of the corresponding primitive type (e.g. `Integer` - `0`)
-  array | a new empty array
-  collection, map | empty collection if the declared type can be instantiated (e.g. `ArrayList`), `null` if it is an interface (e.g. `List`, `Collection`)
-  enum | `null`
-  `String` | empty string (`""`)
-  `Date` | `new Date()`
-  `Object` | `null`
+Type | Default value
+---- | -------------------
+primitive type | the default value of the type (e.g. `short` - `0`, `char` - `\u0000`, `boolean` - `false` etc.)
+wrapper type | the default value of the corresponding primitive type (e.g. `Integer` - `0`)
+array | a new empty array
+collection, map | empty collection if the declared type can be instantiated (e.g. `ArrayList`), `null` if it is an interface (e.g. `List`, `Collection`)
+enum | `null`
+`String` | empty string (`""`)
+`Date` | `new Date()`
+`Object` | `null`
 
 If these default values do not suit you, make and use an own implementation of `FixtureGenerator`.
 
