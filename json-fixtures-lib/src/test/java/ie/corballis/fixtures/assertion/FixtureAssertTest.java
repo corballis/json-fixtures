@@ -54,6 +54,7 @@ public class FixtureAssertTest {
             FixtureAssert.assertThat(bean).matches("fixture1");
             Assertions.fail("Should have failed");
         } catch (ComparisonFailure e) {
+            System.out.println(e.getMessage());
             assertFailureMessage(e, "expectedMessage1");
         }
     }

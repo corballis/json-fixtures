@@ -39,9 +39,9 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
         try {
             MatcherAssert.assertThat(ObjectMapperProvider.getObjectMapper().writeValueAsString(actual), expected);
         } catch(AssertionError assertionError){
-            String actualPrettyString = ObjectMapperProvider.getObjectMapper().writer().withDefaultPrettyPrinter()
-                    .writeValueAsString(actual);
-            String expectedPrettyString = beanFactory.createAsString(true, fixtures);
+            String actualPrettyString = unifyLineEndings(ObjectMapperProvider.getObjectMapper().writer().withDefaultPrettyPrinter()
+                    .writeValueAsString(actual));
+            String expectedPrettyString = unifyLineEndings(beanFactory.createAsString(true, fixtures));
             System.err.print(assertionError.getMessage());
             Assertions.assertThat(actualPrettyString).isEqualTo(expectedPrettyString);
         }
@@ -49,7 +49,7 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
 
     public FixtureAssert matches(String... fixtures) throws JsonProcessingException {
         assertJSON(sameJSONAs(beanFactory.createAsString(fixtures)).allowingAnyArrayOrdering()
-                .allowingExtraUnexpectedFields(), fixtures);
+                                                                   .allowingExtraUnexpectedFields(), fixtures);
         return this;
     }
 
@@ -66,5 +66,11 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
     public FixtureAssert matchesExactlyWithStrictOrder(String... fixtures) throws JsonProcessingException {
         assertJSON(sameJSONAs(beanFactory.createAsString(fixtures)), fixtures);
         return this;
+    }
+
+    // changes the Windows CR LF line endings to Unix LF type in a string
+    // so that the pretty strings are formatted according to one standard on the different OS platforms
+    private String unifyLineEndings(String s){
+        return s.replaceAll("\\r\\n", "\\\n");
     }
 }

@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
 
 public class GeneratorTest {
-    private static final String folder = "D://Minden/devGeneratedFiles";
+    private static final String folder = System.getProperty("java.io.tmpdir");
     private static final String fileNamePrefix = "sample1";
     private static final String fixtureName = "sampleFixture1";
     private static final boolean append = true;
