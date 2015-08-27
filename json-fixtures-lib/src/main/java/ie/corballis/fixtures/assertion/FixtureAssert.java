@@ -38,9 +38,11 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
         isNotNull();
         try {
             MatcherAssert.assertThat(ObjectMapperProvider.getObjectMapper().writeValueAsString(actual), expected);
-        } catch(AssertionError assertionError){
-            String actualPrettyString = unifyLineEndings(ObjectMapperProvider.getObjectMapper().writer().withDefaultPrettyPrinter()
-                    .writeValueAsString(actual));
+        } catch (AssertionError assertionError) {
+            String actualPrettyString = unifyLineEndings(ObjectMapperProvider.getObjectMapper()
+                                                                             .writer()
+                                                                             .withDefaultPrettyPrinter()
+                                                                             .writeValueAsString(actual));
             String expectedPrettyString = unifyLineEndings(beanFactory.createAsString(true, fixtures));
             System.err.print(assertionError.getMessage());
             Assertions.assertThat(actualPrettyString).isEqualTo(expectedPrettyString);
@@ -69,8 +71,8 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
     }
 
     // changes the Windows CR LF line endings to Unix LF type in a string
-    // so that the pretty strings are formatted according to one standard on the different OS platforms
-    private String unifyLineEndings(String s){
+    // so that the pretty strings are formatted uniformly, independently of the OS platform
+    private String unifyLineEndings(String s) {
         return s.replaceAll("\\r\\n", "\\\n");
     }
 }

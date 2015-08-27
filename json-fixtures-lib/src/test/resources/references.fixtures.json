@@ -1,0 +1,86 @@
+{
+  "person1r": {
+    "age": 1,
+    "dog": {
+      "name": "#name1",
+      "age": 3.23,
+      "breed": "labrador"
+    },
+    "cars": []
+  },
+  "person2r1": {
+    "age": 2,
+    "dog": "#dog1"
+  },
+  "person2r2": {
+    "cars": [
+      {
+        "model": "Suzuki"
+      },
+      {
+        "model": "Toyota"
+      },
+      "#car1"
+    ]
+  },
+  "person3r": {
+    "age": 3,
+    "dog": null,
+    "cars": "#cars1"
+  },
+  "person4r": {
+    "age": 4,
+    "dog": "#dog2",
+    "cars": [
+      {
+        "model": "#model1"
+      },
+      "#car2"
+    ]
+  },
+  "person5r": "#person4r",
+  "circularr": {
+    "age": "#Age1",
+    "dog": {
+      "name": "#Name1",
+      "age": 4.42,
+      "breed": "#Breed1"
+    },
+    "cars": "#Cars1"
+  },
+  "cars1": [
+    "#car1",
+    "#car2"
+  ],
+  "dog1": {
+    "name": "YYY",
+    "age": "#age1",
+    "breed": "dalmatian"
+  },
+  "dog2": {
+    "name": "#name2",
+    "age": 4.44
+  },
+  "car1": {
+    "model": "Audi"
+  },
+  "car2": {
+    "model": "#model2"
+  },
+  "name1": "XXX",
+  "name2": "ZZZ",
+  "age1": "#age2",
+  "age2": "#age3",
+  "age3": 5.14,
+  "model1": "Seat",
+  "model2": "#model3",
+  "model3": "Skoda",
+  "Age1": "#Age2",
+  "Age2": "#Age1",
+  "Name1": "#Name2",
+  "Name2": "#Name3",
+  "Name3": "#Name4",
+  "Name4": "#Name1",
+  "Breed1": "#Breed1",
+  "Cars1": "#Cars1"
+}

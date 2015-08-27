@@ -27,7 +27,7 @@ public class GeneratorTest {
 
     private void testMap(Map<String, Object> map) {
         Assertions.assertThat(map).isNotNull();
-        MatcherAssert.assertThat(map, hasEntry("doubleField", (Object)(-3.12)));
+        MatcherAssert.assertThat(map, hasEntry("doubleField", (Object) (-3.12)));
         MatcherAssert.assertThat(map, hasEntry("StringFieldInitialized", (Object) "xxx"));
         MatcherAssert.assertThat(map,
                                  hasEntry("WrapperArrayFieldSpecified",

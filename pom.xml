@@ -29,7 +29,8 @@
     </licenses>
 
     <description>
-        JSON fixture library that allows you to easily create beans in your tests from fixtures defined in JSON formatted files.
+        JSON fixture library that allows you to easily create beans in your tests from fixtures defined in JSON
+        formatted files.
     </description>
 
     <developers>
@@ -48,8 +49,8 @@
         <connection>scm:git:git@github.com:corballis/json-fixtures.git</connection>
         <url>scm:git:git@github.com:corballis/json-fixtures.git</url>
         <developerConnection>scm:git:git@github.com:corballis/json-fixtures.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <profiles>
         <profile>

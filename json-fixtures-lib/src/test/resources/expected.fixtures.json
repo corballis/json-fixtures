@@ -1,0 +1,81 @@
+{
+  "person1": {
+    "age": 1,
+    "dog": {
+      "name": "XXX",
+      "age": 3.23,
+      "breed": "labrador"
+    },
+    "cars": []
+  },
+  "person2": {
+    "age": 2,
+    "dog": {
+      "name": "YYY",
+      "age": 5.14,
+      "breed": "dalmatian"
+    },
+    "cars": [
+      {
+        "model": "Suzuki"
+      },
+      {
+        "model": "Toyota"
+      },
+      {
+        "model": "Audi"
+      }
+    ]
+  },
+  "person3": {
+    "age": 3,
+    "dog": null,
+    "cars": [
+      {
+        "model": "Audi"
+      },
+      {
+        "model": "Skoda"
+      }
+    ]
+  },
+  "person4": {
+    "age": 4,
+    "dog": {
+      "name": "ZZZ",
+      "age": 4.44
+    },
+    "cars": [
+      {
+        "model": "Seat"
+      },
+      {
+        "model": "Skoda"
+      }
+    ]
+  },
+  "person5": {
+    "age": 4,
+    "dog": {
+      "name": "ZZZ",
+      "age": 4.44
+    },
+    "cars": [
+      {
+        "model": "Seat"
+      },
+      {
+        "model": "Skoda"
+      }
+    ]
+  },
+  "circular": {
+    "age": 0,
+    "dog": {
+      "name": null,
+      "age": 4.42,
+      "breed": null
+    },
+    "cars": null
+  }
+}

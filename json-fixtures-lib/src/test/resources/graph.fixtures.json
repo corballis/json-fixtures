@@ -1,0 +1,75 @@
+{
+  "graph": [
+    "#vertex1",
+    "#vertex2",
+    "#vertex3",
+    "#vertex4",
+    "#vertex5",
+    "#vertex6",
+    "#vertex7",
+    "#vertex8",
+    "#vertex9",
+    "#vertex10"
+  ],
+  "vertex1": {
+    "id": 1,
+    "neighbors": [
+      "#vertex2",
+      "#vertex3"
+    ]
+  },
+  "vertex2": {
+    "id": 2,
+    "neighbors": []
+  },
+  "vertex3": {
+    "id": 3,
+    "neighbors": [
+      "#vertex6"
+    ]
+  },
+  "vertex4": {
+    "id": 4,
+    "neighbors": [
+      "#vertex3",
+      "#vertex8"
+    ]
+  },
+  "vertex5": {
+    "id": 5,
+    "neighbors": [
+      "#vertex3",
+      "#vertex6"
+    ]
+  },
+  "vertex6": {
+    "id": 6,
+    "neighbors": [
+      "#vertex5"
+    ]
+  },
+  "vertex7": {
+    "id": 7,
+    "neighbors": [
+      "#vertex7",
+      "#vertex9"
+    ]
+  },
+  "vertex8": {
+    "id": 8,
+    "neighbors": [
+      "#vertex6",
+      "#vertex7"
+    ]
+  },
+  "vertex9": {
+    "id": 9,
+    "neighbors": [
+      "#vertex8"
+    ]
+  },
+  "vertex10": {
+    "id": 10,
+    "neighbors": []
+  }
+}
