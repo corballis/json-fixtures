@@ -10,7 +10,7 @@ JSON Test Fixture library for Java [![Build Status](https://travis-ci.org/szmeti
 
 The library provides three main features:
 
-- it builds Java bean objects from JSON fixture files for testing Java applications easily, with the use of only a few annotations;
+- it builds Java bean / map / list / set test-objects from JSON fixture files for testing Java applications easily, with the use of only a few annotations;
 - it generates fixture files with default values based on the skeleton of a bean, to enable us to load it as a fixture next time;
 - it eases unit testing with four handy assertion methods (that are based on converting both the expected and the actual values (the results) to JSON strings).
 
@@ -35,7 +35,7 @@ If you want a JSON file to be recognized as a possible fixture resource, its nam
 The library supports both simple bean objects and collections; beans can also contain nested fields.
 Example: the below JSONs are all correct, and each one could be wrapped to the Java type following it:
 
- - A simple bean object (with primitive fields):
+ - A simple bean object (with a String and a primitive field):
 
 ```json
 {

@@ -14,7 +14,6 @@ public class FixtureFieldAnnotationProcessor implements FieldAnnotationProcessor
                                                                                        InstantiationException {
         String[] fixtures = annotation.value();
 
-        // if no fixture name is specified as annotation parameter, the default name is the name of the field
         if (fixtures.length == 0) {
             fixtures = new String[] {field.getName()};
         }
