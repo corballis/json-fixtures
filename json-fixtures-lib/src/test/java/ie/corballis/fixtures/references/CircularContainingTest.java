@@ -19,6 +19,8 @@ public class CircularContainingTest {
     private Owner owner2;
     @Fixture
     private Owner owner3;
+    @Fixture
+    private Owner owner4;
 
     @Fixture
     private List<GraphVertex> graph;
@@ -33,12 +35,15 @@ public class CircularContainingTest {
         System.out.println(owner1);
         System.out.println(owner2);
         System.out.println(owner3);
+        System.out.println(owner4);
         Owner manualOwner1 = constructOwner1Manually();
         Owner manualOwner2 = constructOwner2Manually();
         Owner manualOwner3 = constructOwner3Manually();
+        Owner manualOwner4 = constructOwner4Manually();
         assertThat(owner1).isEqualTo(manualOwner1);
         assertThat(owner2).isEqualTo(manualOwner2);
         assertThat(owner3).isEqualTo(manualOwner3);
+        assertThat(owner4).isEqualTo(manualOwner4);
     }
 
     public Owner constructOwner1Manually() {
@@ -59,6 +64,15 @@ public class CircularContainingTest {
 
     public Owner constructOwner3Manually() {
         return new Owner("Owner3");
+    }
+
+    public Owner constructOwner4Manually() {
+        Owner owner = new Owner("Owner4");
+        Thing thing1 = new Thing("Thing1", owner);
+        Thing thing2 = new Thing("Thing2", owner);
+        owner.add(thing1);
+        owner.add(thing2);
+        return owner;
     }
 
     @Test

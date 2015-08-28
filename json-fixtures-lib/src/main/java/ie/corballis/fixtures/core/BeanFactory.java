@@ -41,12 +41,6 @@ public class BeanFactory {
     private Cache<String, JsonNode> fixtures = CacheBuilder.newBuilder().build();
 
     private Map<String, Object> resolves = newHashMap();
-    private Map<String, Type> fieldTypes = newHashMap();
-    private Map<Path, JsonNode> listJsonNodesOfSets = newHashMap();
-    private Map<Path, JavaType> elementTypesOfSets = newHashMap();
-    private Map<Path, List<Object>> listRepresentationsOfSets = newHashMap();
-    private Multimap<String, Path> referencesVisited = HashMultimap.create();
-    private Multimap<String, Path> referencesAdjacent = HashMultimap.create();
 
     public BeanFactory() {
         this((FixtureScanner) null);
@@ -120,29 +114,30 @@ public class BeanFactory {
 
     public <T> T create(Type type, String... fixtureNames) throws IOException {
         checkArgument(fixtureNames.length > 0, "At least one fixture needs to be specified.");
-        JsonNode cleanBaseNode = getCleanJson(fixtureNames, type);
+        ReferenceContext context = new ReferenceContext();
+        JsonNode cleanBaseNode = getCleanJson(fixtureNames, type, context);
         T baseObject = convertJsonNodeToObject(cleanBaseNode, type);
-        String fixtureName = getAndRegisterFixtureNameForBaseObjectIfNotMerged(fixtureNames, baseObject);
+        String fixtureName = getAndRegisterFixtureNameForBaseObjectIfNotMerged(fixtureNames, baseObject, context);
         // fixtureName is null if and only if cleanBaseNode is merged from multiple fixtures
-        resolveReferencesToObjects();
-        createListRepresentationsOfSets();
-        baseObject = setContentsOfReferencedFields(baseObject, fixtureName);
-        referencesVisited.clear();
+        resolveReferencesToObjects(context);
+        createListRepresentationsOfSets(context);
+        baseObject = setContentsOfReferencedFields(baseObject, fixtureName, context);
         return baseObject;
     }
 
-    private JsonNode getCleanJson(String[] fixtureNames, Type type) throws IOException {
+    private JsonNode getCleanJson(String[] fixtureNames, Type type, ReferenceContext context) throws IOException {
         if (fixtureNames.length == 1) {
-            return getFixtureAsCleanJsonNode(fixtureNames[0], type);
+            return getFixtureAsCleanJsonNode(fixtureNames[0], type, context);
         } else {
             JsonNode baseNode = mergeFixtures(fixtureNames);
-            return cleanExistingJsonNode(baseNode, type);
+            return cleanExistingJsonNode(baseNode, type, context);
         }
     }
 
-    private JsonNode getFixtureAsCleanJsonNode(String fixtureName, Type type) throws IOException {
+    private JsonNode getFixtureAsCleanJsonNode(String fixtureName, Type type, ReferenceContext context) throws
+                                                                                                        IOException {
         JsonNode fixtureAsJsonNode = getFixtureAsJsonNode(fixtureName);
-        return cleanJsonNode(fixtureAsJsonNode, type, new Path(fixtureName));
+        return cleanJsonNode(fixtureAsJsonNode, type, new Path(fixtureName), context);
     }
 
     private JsonNode getFixtureAsJsonNode(String fixtureName) {
@@ -187,12 +182,13 @@ public class BeanFactory {
         return targetNode;
     }
 
-    private JsonNode cleanExistingJsonNode(JsonNode node, Type type) throws IOException {
-        return cleanJsonNode(node, type, new Path(null));
+    private JsonNode cleanExistingJsonNode(JsonNode node, Type type, ReferenceContext context) throws IOException {
+        return cleanJsonNode(node, type, new Path(null), context);
     }
 
     // changes the reference strings that occur in a node, to NullNodes
-    private JsonNode cleanJsonNode(JsonNode original, Type type, Path path) throws IOException {
+    private JsonNode cleanJsonNode(JsonNode original, Type type, Path path, ReferenceContext context) throws
+                                                                                                      IOException {
         if (original.isObject()) {
             Iterator<String> fieldNames = original.fieldNames();
             while (fieldNames.hasNext()) {
@@ -200,7 +196,7 @@ public class BeanFactory {
                 path.push(fieldName);
                 try {
                     Type fieldType = findNextType(type, fieldName);
-                    JsonNode newNode = cleanJsonNode(original.get(fieldName), fieldType, path);
+                    JsonNode newNode = cleanJsonNode(original.get(fieldName), fieldType, path, context);
                     path.pop();
                     ((ObjectNode) original).replace(fieldName, newNode);
                 } catch (NoSuchFieldException e) {
@@ -210,14 +206,14 @@ public class BeanFactory {
                 }
             }
         } else if (original.isArray()) {
-            Type elementType = getElementTypeOfCollectionOrArray(type, original, path);
+            Type elementType = getElementTypeOfCollectionOrArray(type, original, path, context);
             for (int i = 0; i < original.size(); i++) {
                 path.push(i);
-                ((ArrayNode) original).set(i, cleanJsonNode(original.get(i), elementType, path));
+                ((ArrayNode) original).set(i, cleanJsonNode(original.get(i), elementType, path, context));
                 path.pop();
             }
         } else if (original.isTextual()) {
-            if (isValidReference(original.textValue(), type, path)) {
+            if (isValidReference(original.textValue(), type, path, context)) {
                 original = NullNode.getInstance();
             }
         }
@@ -244,11 +240,14 @@ public class BeanFactory {
         throw new NoSuchFieldException("Unknown property '" + fieldName + "'!");
     }
 
-    private Type getElementTypeOfCollectionOrArray(Type type, JsonNode listJsonNode, Path path) {
+    private Type getElementTypeOfCollectionOrArray(Type type,
+                                                   JsonNode listJsonNode,
+                                                   Path path,
+                                                   ReferenceContext context) {
         if (type instanceof CollectionType) {
             if (Set.class.isAssignableFrom(((CollectionType) type).getRawClass())) {
-                listJsonNodesOfSets.put(path.copy(), listJsonNode);
-                elementTypesOfSets.put(path.copy(), ((CollectionType) type).getContentType());
+                context.listJsonNodesOfSets.put(path.copy(), listJsonNode);
+                context.elementTypesOfSets.put(path.copy(), ((CollectionType) type).getContentType());
             }
             return ((CollectionType) type).getContentType().getRawClass();
         } else { // if type is an array
@@ -257,13 +256,13 @@ public class BeanFactory {
     }
 
     @SuppressWarnings("unchecked")
-    private boolean isValidReference(String text, Type type, Path path) {
+    private boolean isValidReference(String text, Type type, Path path, ReferenceContext context) {
         if (text.startsWith("#")) {
             String reference = text.substring(1);
             JsonNode exists = fixtures.getIfPresent(reference);
             if (exists != null) {
-                referencesAdjacent.put(reference, path.copy());
-                fieldTypes.put(reference, type);
+                context.referencesAdjacent.put(reference, path.copy());
+                context.fieldTypes.put(reference, type);
                 return true;
             }
         }
@@ -281,7 +280,9 @@ public class BeanFactory {
         }
     }
 
-    private String getAndRegisterFixtureNameForBaseObjectIfNotMerged(String[] fixtureNames, Object baseObject) {
+    private String getAndRegisterFixtureNameForBaseObjectIfNotMerged(String[] fixtureNames,
+                                                                     Object baseObject,
+                                                                     ReferenceContext context) {
         if (fixtureNames.length == 1) {
             String fixtureName = fixtureNames[0];
             resolves.put(fixtureName, baseObject);
@@ -290,17 +291,17 @@ public class BeanFactory {
         return null;
     }
 
-    private void resolveReferencesToObjects() throws IOException {
+    private void resolveReferencesToObjects(ReferenceContext context) throws IOException {
         Multimap<String, Path> queue = HashMultimap.create();
-        while (!referencesAdjacent.isEmpty()) {
+        while (!context.referencesAdjacent.isEmpty()) {
             queue.clear();
-            queue.putAll(referencesAdjacent);
-            referencesAdjacent.clear();
-            referencesVisited.putAll(queue);
+            queue.putAll(context.referencesAdjacent);
+            context.referencesAdjacent.clear();
+            context.referencesVisited.putAll(queue);
             for (String reference : queue.keySet()) {
                 if (!resolves.containsKey(reference)) {
-                    Type type = fieldTypes.get(reference);
-                    JsonNode referencedNode = getFixtureAsCleanJsonNode(reference, type);
+                    Type type = context.fieldTypes.get(reference);
+                    JsonNode referencedNode = getFixtureAsCleanJsonNode(reference, type, context);
                     Object referencedObject = convertJsonNodeToObject(referencedNode, type);
                     resolves.put(reference, referencedObject);
                 }
@@ -308,19 +309,20 @@ public class BeanFactory {
         }
     }
 
-    private void createListRepresentationsOfSets() throws IOException {
-        for (Path path : elementTypesOfSets.keySet()) {
-            JavaType elementType = elementTypesOfSets.get(path);
-            JsonNode listNode = listJsonNodesOfSets.get(path);
+    private void createListRepresentationsOfSets(ReferenceContext context) throws IOException {
+        for (Path path : context.elementTypesOfSets.keySet()) {
+            JavaType elementType = context.elementTypesOfSets.get(path);
+            JsonNode listNode = context.listJsonNodesOfSets.get(path);
             CollectionType listType = CollectionType.construct(List.class, elementType);
             List<Object> list = convertJsonNodeToObject(listNode, listType);
-            listRepresentationsOfSets.put(path.copy(), list);
+            context.listRepresentationsOfSets.put(path.copy(), list);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T setContentsOfReferencedFields(T baseObject, String baseObjectName) throws IOException {
-        for (Map.Entry<String, Path> entry : referencesVisited.entries()) {
+    private <T> T setContentsOfReferencedFields(T baseObject, String baseObjectName, ReferenceContext context) throws
+                                                                                                               IOException {
+        for (Map.Entry<String, Path> entry : context.referencesVisited.entries()) {
             String reference = entry.getKey();
             Path path = entry.getValue();
             Object value = resolves.get(reference);
@@ -337,14 +339,15 @@ public class BeanFactory {
                     resolves.put((String) path.firstElement(), value);
                 }
             } else {
-                setFieldValue(baseObject, path, value);
+                setFieldValue(baseObject, path, value, context);
             }
         }
         return baseObject;
     }
 
     @SuppressWarnings("unchecked")
-    private void setFieldValue(Object baseObject, Path path, Object value) throws IOException {
+    private void setFieldValue(Object baseObject, Path path, Object value, ReferenceContext context) throws
+                                                                                                     IOException {
         checkArgument(path.size() > 1, "Wrong parameter: the size of the path must be at least 2!");
         Object targetObject = null;
         Object field = null;
@@ -361,7 +364,7 @@ public class BeanFactory {
                 } else if (targetObject instanceof List) {
                     targetObject = ((List) targetObject).get((Integer) field);
                 } else { // if targetObject instanceof Set
-                    List<Object> list = listRepresentationsOfSets.get(path);
+                    List<Object> list = context.listRepresentationsOfSets.get(path);
                     targetObject = list.get((Integer) field);
                 }
             } else {
@@ -396,14 +399,24 @@ public class BeanFactory {
         } else if (targetObject instanceof List) {
             ((List) targetObject).set((Integer) field, value);
         } else { // if targetObject instanceof Set
-            setElementOfSet((Set) targetObject, path, (Integer) field, value);
+            setElementOfSet((Set) targetObject, path, (Integer) field, value, context);
         }
     }
 
-    private void setElementOfSet(Set<Object> set, Path path, int index, Object value) {
-        List<Object> list = listRepresentationsOfSets.get(path.withoutLastElement());
+    private void setElementOfSet(Set<Object> set, Path path, int index, Object value, ReferenceContext context) {
+        List<Object> list = context.listRepresentationsOfSets.get(path.withoutLastElement());
         list.set(index, value);
         set.clear();
         set.addAll(list);
+    }
+
+    private static class ReferenceContext {
+
+        private Map<String, Type> fieldTypes = newHashMap();
+        private Map<Path, JsonNode> listJsonNodesOfSets = newHashMap();
+        private Map<Path, List<Object>> listRepresentationsOfSets = newHashMap();
+        private Map<Path, JavaType> elementTypesOfSets = newHashMap();
+        private Multimap<String, Path> referencesVisited = HashMultimap.create();
+        private Multimap<String, Path> referencesAdjacent = HashMultimap.create();
     }
 }

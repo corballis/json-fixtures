@@ -28,9 +28,11 @@ public class Thing {
             return false;
         }
         Thing thing = (Thing) o;
-        if (name != null ? !name.equals(thing.name) : thing.name != null) {
-            return false;
-        }
-        return !(owner != null ? !owner.getName().equals(thing.owner.getName()) : thing.owner != null);
+        return !(name != null ? !name.equals(thing.name) : thing.name != null);
+    }
+
+    @Override
+    public int hashCode() {
+        return name != null ? name.hashCode() : 0;
     }
 }
