@@ -40,8 +40,6 @@ public class BeanFactory {
 
     private Cache<String, JsonNode> fixtures = CacheBuilder.newBuilder().build();
 
-    private Map<String, Object> resolves = newHashMap();
-
     public BeanFactory() {
         this((FixtureScanner) null);
     }
@@ -142,8 +140,8 @@ public class BeanFactory {
 
     private JsonNode getFixtureAsJsonNode(String fixtureName) {
         JsonNode fixtureAsJsonNode = fixtures.getIfPresent(fixtureName);
-        checkNotNull(fixtureAsJsonNode, fixtureName + " is not a valid fixture name!");
-        return fixtureAsJsonNode;
+        checkNotNull(fixtureAsJsonNode, "'" + fixtureName + "' is not a valid fixture name!");
+        return fixtureAsJsonNode.deepCopy();
     }
 
     private JsonNode mergeFixtures(String[] fixtureNames) {
@@ -285,7 +283,7 @@ public class BeanFactory {
                                                                      ReferenceContext context) {
         if (fixtureNames.length == 1) {
             String fixtureName = fixtureNames[0];
-            resolves.put(fixtureName, baseObject);
+            context.resolves.put(fixtureName, baseObject);
             return fixtureName;
         }
         return null;
@@ -299,11 +297,11 @@ public class BeanFactory {
             context.referencesAdjacent.clear();
             context.referencesVisited.putAll(queue);
             for (String reference : queue.keySet()) {
-                if (!resolves.containsKey(reference)) {
+                if (!context.resolves.containsKey(reference)) {
                     Type type = context.fieldTypes.get(reference);
                     JsonNode referencedNode = getFixtureAsCleanJsonNode(reference, type, context);
                     Object referencedObject = convertJsonNodeToObject(referencedNode, type);
-                    resolves.put(reference, referencedObject);
+                    context.resolves.put(reference, referencedObject);
                 }
             }
         }
@@ -325,7 +323,7 @@ public class BeanFactory {
         for (Map.Entry<String, Path> entry : context.referencesVisited.entries()) {
             String reference = entry.getKey();
             Path path = entry.getValue();
-            Object value = resolves.get(reference);
+            Object value = context.resolves.get(reference);
             if (path.size() == 1) {
                 boolean isBaseObject;
                 if (path.firstElement() == null) {
@@ -336,7 +334,7 @@ public class BeanFactory {
                 if (isBaseObject) {
                     baseObject = (T) value;
                 } else {
-                    resolves.put((String) path.firstElement(), value);
+                    context.resolves.put((String) path.firstElement(), value);
                 }
             } else {
                 setFieldValue(baseObject, path, value, context);
@@ -372,7 +370,7 @@ public class BeanFactory {
                 if (targetObjectName == null) {
                     targetObject = baseObject;
                 } else {
-                    targetObject = resolves.get(targetObjectName);
+                    targetObject = context.resolves.get(targetObjectName);
                 }
             }
 
@@ -411,7 +409,7 @@ public class BeanFactory {
     }
 
     private static class ReferenceContext {
-
+        private Map<String, Object> resolves = newHashMap();
         private Map<String, Type> fieldTypes = newHashMap();
         private Map<Path, JsonNode> listJsonNodesOfSets = newHashMap();
         private Map<Path, List<Object>> listRepresentationsOfSets = newHashMap();
