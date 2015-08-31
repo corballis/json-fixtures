@@ -135,13 +135,23 @@ public class BeanFactory {
     private JsonNode getFixtureAsCleanJsonNode(String fixtureName, Type type, ReferenceContext context) throws
                                                                                                         IOException {
         JsonNode fixtureAsJsonNode = getFixtureAsJsonNode(fixtureName);
-        return cleanJsonNode(fixtureAsJsonNode, type, new Path(fixtureName), context);
+        return cleanJsonNode(fixtureAsJsonNode, type, newPath(fixtureName), context);
     }
 
     private JsonNode getFixtureAsJsonNode(String fixtureName) {
         JsonNode fixtureAsJsonNode = fixtures.getIfPresent(fixtureName);
         checkNotNull(fixtureAsJsonNode, "'" + fixtureName + "' is not a valid fixture name!");
         return fixtureAsJsonNode.deepCopy();
+    }
+
+    private JsonNode cleanExistingJsonNode(JsonNode node, Type type, ReferenceContext context) throws IOException {
+        return cleanJsonNode(node, type, newPath(null), context);
+    }
+
+    public Stack<Object> newPath(Object firstElement) {
+        Stack<Object> newPath = new Stack<Object>();
+        newPath.push(firstElement);
+        return newPath;
     }
 
     private JsonNode mergeFixtures(String[] fixtureNames) {
@@ -180,13 +190,9 @@ public class BeanFactory {
         return targetNode;
     }
 
-    private JsonNode cleanExistingJsonNode(JsonNode node, Type type, ReferenceContext context) throws IOException {
-        return cleanJsonNode(node, type, new Path(null), context);
-    }
-
     // changes the reference strings that occur in a node, to NullNodes
-    private JsonNode cleanJsonNode(JsonNode original, Type type, Path path, ReferenceContext context) throws
-                                                                                                      IOException {
+    private JsonNode cleanJsonNode(JsonNode original, Type type, Stack<Object> path, ReferenceContext context) throws
+                                                                                                               IOException {
         if (original.isObject()) {
             Iterator<String> fieldNames = original.fieldNames();
             while (fieldNames.hasNext()) {
@@ -239,13 +245,12 @@ public class BeanFactory {
     }
 
     private Type getElementTypeOfCollectionOrArray(Type type,
-                                                   JsonNode listJsonNode,
-                                                   Path path,
+                                                   JsonNode listJsonNode, Stack<Object> path,
                                                    ReferenceContext context) {
         if (type instanceof CollectionType) {
             if (Set.class.isAssignableFrom(((CollectionType) type).getRawClass())) {
-                context.listJsonNodesOfSets.put(path.copy(), listJsonNode);
-                context.elementTypesOfSets.put(path.copy(), ((CollectionType) type).getContentType());
+                context.listJsonNodesOfSets.put(copyPath(path), listJsonNode);
+                context.elementTypesOfSets.put(copyPath(path), ((CollectionType) type).getContentType());
             }
             return ((CollectionType) type).getContentType().getRawClass();
         } else { // if type is an array
@@ -254,12 +259,17 @@ public class BeanFactory {
     }
 
     @SuppressWarnings("unchecked")
-    private boolean isValidReference(String text, Type type, Path path, ReferenceContext context) {
+    public Stack<Object> copyPath(Stack<Object> path) {
+        return (Stack<Object>) path.clone();
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean isValidReference(String text, Type type, Stack<Object> path, ReferenceContext context) {
         if (text.startsWith("#")) {
             String reference = text.substring(1);
             JsonNode exists = fixtures.getIfPresent(reference);
             if (exists != null) {
-                context.referencesAdjacent.put(reference, path.copy());
+                context.referencesAdjacent.put(reference, copyPath(path));
                 context.fieldTypes.put(reference, type);
                 return true;
             }
@@ -290,7 +300,7 @@ public class BeanFactory {
     }
 
     private void resolveReferencesToObjects(ReferenceContext context) throws IOException {
-        Multimap<String, Path> queue = HashMultimap.create();
+        Multimap<String, Stack<Object>> queue = HashMultimap.create();
         while (!context.referencesAdjacent.isEmpty()) {
             queue.clear();
             queue.putAll(context.referencesAdjacent);
@@ -308,21 +318,21 @@ public class BeanFactory {
     }
 
     private void createListRepresentationsOfSets(ReferenceContext context) throws IOException {
-        for (Path path : context.elementTypesOfSets.keySet()) {
+        for (Stack<Object> path : context.elementTypesOfSets.keySet()) {
             JavaType elementType = context.elementTypesOfSets.get(path);
             JsonNode listNode = context.listJsonNodesOfSets.get(path);
             CollectionType listType = CollectionType.construct(List.class, elementType);
             List<Object> list = convertJsonNodeToObject(listNode, listType);
-            context.listRepresentationsOfSets.put(path.copy(), list);
+            context.listRepresentationsOfSets.put(copyPath(path), list);
         }
     }
 
     @SuppressWarnings("unchecked")
     private <T> T setContentsOfReferencedFields(T baseObject, String baseObjectName, ReferenceContext context) throws
                                                                                                                IOException {
-        for (Map.Entry<String, Path> entry : context.referencesVisited.entries()) {
+        for (Map.Entry<String, Stack<Object>> entry : context.referencesVisited.entries()) {
             String reference = entry.getKey();
-            Path path = entry.getValue();
+            Stack<Object> path = entry.getValue();
             Object value = context.resolves.get(reference);
             if (path.size() == 1) {
                 boolean isBaseObject;
@@ -344,8 +354,8 @@ public class BeanFactory {
     }
 
     @SuppressWarnings("unchecked")
-    private void setFieldValue(Object baseObject, Path path, Object value, ReferenceContext context) throws
-                                                                                                     IOException {
+    private void setFieldValue(Object baseObject, Stack<Object> path, Object value, ReferenceContext context) throws
+                                                                                                              IOException {
         checkArgument(path.size() > 1, "Wrong parameter: the size of the path must be at least 2!");
         Object targetObject = null;
         Object field = null;
@@ -401,20 +411,30 @@ public class BeanFactory {
         }
     }
 
-    private void setElementOfSet(Set<Object> set, Path path, int index, Object value, ReferenceContext context) {
-        List<Object> list = context.listRepresentationsOfSets.get(path.withoutLastElement());
+    private void setElementOfSet(Set<Object> set,
+                                 Stack<Object> path,
+                                 int index,
+                                 Object value,
+                                 ReferenceContext context) {
+        List<Object> list = context.listRepresentationsOfSets.get(withoutLastElement(path));
         list.set(index, value);
         set.clear();
         set.addAll(list);
     }
 
+    public Stack<Object> withoutLastElement(Stack<Object> path) {
+        Stack<Object> newPath = copyPath(path);
+        newPath.pop();
+        return newPath;
+    }
+
     private static class ReferenceContext {
         private Map<String, Object> resolves = newHashMap();
         private Map<String, Type> fieldTypes = newHashMap();
-        private Map<Path, JsonNode> listJsonNodesOfSets = newHashMap();
-        private Map<Path, List<Object>> listRepresentationsOfSets = newHashMap();
-        private Map<Path, JavaType> elementTypesOfSets = newHashMap();
-        private Multimap<String, Path> referencesVisited = HashMultimap.create();
-        private Multimap<String, Path> referencesAdjacent = HashMultimap.create();
+        private Map<Stack<Object>, JsonNode> listJsonNodesOfSets = newHashMap();
+        private Map<Stack<Object>, List<Object>> listRepresentationsOfSets = newHashMap();
+        private Map<Stack<Object>, JavaType> elementTypesOfSets = newHashMap();
+        private Multimap<String, Stack<Object>> referencesVisited = HashMultimap.create();
+        private Multimap<String, Stack<Object>> referencesAdjacent = HashMultimap.create();
     }
 }
