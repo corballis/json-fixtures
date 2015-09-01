@@ -202,7 +202,7 @@ With references, you can embed fixtures into each other. This
  - makes your fixture file much more tidy, ordered and structured;
  - enables the re-use of data written in the fixture file only once.
 
-**Example** - let's say we have 3 people with some cars in their possession. These objects -- `person1`, `person2` and `person3`
+**Example** - let's say we have 3 people with some cars in their possession. These objects -- `person1`, `person2` and `person3` --
 will be the fixtures that we want to use in our test class.
 Alice and Bob are family members, so we know that they own the same two cars.
 Furthermore, we know that John's car is of the same model as their second one.
@@ -234,7 +234,7 @@ Using references, we can write the necessary fixture file in the following very 
 ```
 
 Note that the usage of references eases *future modification*: if tomorrow Alice and Bob change their Audi to some other car,
-we will have to rewrite the file only at one place, instead of having to modify it by every single person object
+we have to rewrite the file only at one place, instead of having to modify it by every single person object
 that connects to the changed data.
 
 For more examples, see the tests in the library's test package `references`,
@@ -266,7 +266,7 @@ So, as long as there *is* at least one directed circle in the represented graph,
 
 **Example** - let's define the following graph in JSON format:
 
-![Graph](https://github.com/corballis/json-fixtures/sampleGraph.jpg "Graph")
+![Graph](https://github.com/corballis/json-fixtures/blob/newFeatureReferences/sampleGraph.jpg "Graph")
 
 ```json
 {
@@ -365,7 +365,7 @@ The parameter of the method is a not-null instance of the class that declares th
 If the initialization happens in the same class where these fields are, let the parameter value be `this`.
 
 
-#### **_Additional information_**:<br/>the default settings of the library's object mapper
+#### **_Additional information_**:<br/>the settings of the library's default object mapper
 The way JSON Fixtures reads up the JSON files rests on [Jackson](https://github.com/FasterXML/jackson) library. It uses Jackson's `ObjectMapper` class for this purpose. JSON Fixtures configures its object mapper with only two basic characteristics:
 ```java
 objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
