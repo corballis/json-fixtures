@@ -95,10 +95,8 @@ public class ReferenceResolver {
             String value = original.textValue();
             path.push(value);
             if (value.startsWith(referencePrefix)) {
-                String[] referenceParts = value.split(referencePrefix);
-                validateReference(path, referencePrefix, referenceParts);
-                JsonNode referenceNode = beanFactory.getFixtureAsJsonNode(referenceParts[1]).orElse(null);
-                buildBaseObject(referenceNode, path, baseObject, referencePrefix);
+                validateReference(original, path, referencePrefix);
+                buildBaseObject(getReferenceNode(original, referencePrefix), path, baseObject, referencePrefix);
             } else {
                 baseObject = getPrimitiveValue(original);
             }
