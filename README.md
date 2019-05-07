@@ -1,6 +1,5 @@
 JSON Test Fixture library for Java [![Build Status](https://travis-ci.org/corballis/json-fixtures.svg?branch=master)](https://travis-ci.org/corballis/json-fixtures)
 
-#Documentation for <br/>**JSON Fixtures** library
 `JSON Fixtures` is an open-source Java library that enables us, Java developers and testers, to test our applications quickly and easily, using fixtures that we have prepared in JSON format.
 
 >**Fixture** (according to [Wikipedia](https://en.wikipedia.org/wiki/Test_fixture#Software)):
@@ -26,7 +25,7 @@ To set up the library in a Java project, copy the following XML node, and paste 
 ```
 From this time on, you can use the classes provided by the library.
 
-## **Main feature 1:**<br/>Building Java objects from JSON fixture files
+## Building Java objects from JSON fixture files
 One main feature of the library is that it can detect JSON fixture files on the project's classpath, process their content, and initialize the annotated fields of the test class with them for further testing. This process is almost totally automatic, it requires almost no extra configuration. And as JSON files can be created, edited and reproduced easily, this spares the developers or testers from having to build the object hierarchy of the test data from source code.
 
 ### How you should prepare the JSON fixture files
@@ -115,6 +114,10 @@ private List<String> cities;
 If you specify no fixture name(s) for the `@Fixture` annotation as parameter(s), then the field annotation processor takes the field's name as the "default" fixture name.
 Therefore, if you are satisfied with the field name being equal to the fixture name, you needn't write anything after `@Fixture`.
 
+>**Note**: Fixture names are global on your classpath, so that you can reuse any fixture in any test class. If multiple fixtures found with the same name, the library will use the last fixture which has been scanned.
+This also means that you need to take care of the proper naming convention. 
+Tips: don't use too generic names like "person", "car"..etc. because that can be accidentally overridden. 
+
 **Example** - the following two solutions are equivalent (and, of course, both of them are correct):
 ```java
 @Fixture("car")
@@ -190,13 +193,19 @@ Car{age=6, color='black', id=1}
 Car{age=6, color='black', id=2}
 ```
 
+>**Note**: Merging will be applied in the same order as you defined in the annotation. 
+If the two (or more) objects has the same properties, the value in the last one wins. 
+Currently merging lists or sets or any array like types are NOT supported. 
+Feel free to contribute and send us a pull request! 
+
 ### Using references
 
 A big advantage of our library is that it supports the usage of **references** in the fixture files.
 
-A *reference* is a string beginning with `#`, and ending in a valid fixture name.
+A *reference* is a string beginning with `#` (by default), and ending in a valid fixture name.
 E.g. `"#car1"` is treated as a reference if and only if there *is* a fixture with the name `car1`;
-otherwise it's treated simply as a string.
+otherwise the library with fail.
+If you want to use different prefix for your references specify it in the `@Fixture` annotation.
 
 With references, you can embed fixtures into each other. This
  - makes your fixture file much more tidy, ordered and structured;
@@ -243,110 +252,26 @@ together with the fixture files they rely on; especially
 and
 [references.fixtures.json](https://github.com/corballis/json-fixtures/blob/newFeatureReferences/json-fixtures-lib/src/test/resources/references.fixtures.json).
 
-#### How to realize circular containing with references
+Circular dependencies between fixture references are NOT permitted in any depth. It will be detected by the library.
 
-We know that objects can contain further objects as fields, or as elements of a collection field.
-Based on the containing relation, we can build a containing graph.
+If you need to use object graph that are referring to the same object over and over again (e.g: joined hibernate entities), 
+split these to separated fixtures and link them in the test code. If you want to break circular dependencies,
+you can use `@JsonIdentityInfo` annotation provided by Jackson library.
 
-In simple cases this graph is a tree: a root object contains some further objects,
-children may contain even further objects etc.,
-but no child is allowed to contain any of its siblings or ancestral objects.
-
-However, in more complex cases, there can be cycles in this graph.
-This means, an object can directly or indirectly refer back to (some of) its container(s).
-
-This is called **circular containing**.
-
-A relatively simple example of circular containing is when a person object contains the car (owned by the represented person)
-in a "car" field, and the car object contains the previous person (its owner) in an "owner" field, too.
-
-A more complex, but very nice and typical example is representing real graphs as sets of graph vertexes,
-where each vertex object contains its neighbors as a vertex list.
-So, as long as there *is* at least one directed circle in the represented graph, there *is* circular object-containing.
-
-**Example** - let's define the following graph in JSON format:
-
-![Graph](https://github.com/corballis/json-fixtures/blob/newFeatureReferences/sampleGraph.jpg "Graph")
-
-```json
-{
-	"graph": [
-		"#vertex1",
-		"#vertex2",
-		"#vertex3",
-		"#vertex4",
-		"#vertex5"
-	],
-	"vertex1": {
-		"id": 1,
-		"neighbors": [
-			"#vertex2",
-			"#vertex3"
-		]
-	},
-	"vertex2": {
-		"id": 2,
-        "neighbors": []
-	},
-	"vertex3": {
-		"id": 3,
-    	"neighbors": [
-    		"#vertex5"
-    	]
-	},
-	"vertex4": {
-		"id": 4,
-    	"neighbors": [
-    		"#vertex3",
-    		"#vertex5"
-    	]
-	},
-	"vertex5": {
-		"id": 5,
-    	"neighbors": [
-    		"#vertex4"
-    	]
-	},
-}
-```
-
-Circular containing is **supported** by our library.
-So with the suitable Java code, the above fixture should work.
-
-For a more entire and elaborated graph example, see
-[CircularContainingTest](https://github.com/corballis/json-fixtures/blob/newFeatureReferences/json-fixtures-lib/src/test/java/ie/corballis/fixtures/references/CircularContainingTest.java)
-and
-[graph.fixtures.json](https://github.com/corballis/json-fixtures/blob/newFeatureReferences/json-fixtures-lib/src/test/resources/graph.fixtures.json).
-
-#### Cycle in a reference chain?
+#### Reference chain
 
 Look at this JSON:
 
 ```json
 {
 	"car1": {"model": "#model"},
-	"car2": "#car2",
 	"model": "#model2",
 	"model2": "#model3",
-	"model3": "#model"
+	"model3": "BMW"
 }
 ```
 
-We observe circularity in this one as well, just as in the previous graph example.
-Still, what's the essential difference between the two cases?
-
-In the graph example, it was the *containing* of the objects that was circular.
-Here, on the contrary, the cycle is in the *reference chain* itself.
-
-It's possible for a fixture value to be entirely a reference; the library supports chaining references.
-So in the example above, if the value of "car2"
-was `#car1`, and the value of "model3" was `Toyota`, the fixture file would be correct.
-
-But **if there's a cycle in a reference chain**, the library doesn't know how to resolve these references.
-In these cases, no error or exception is thrown, but **the values related to these references remain null**.
-
-So processing the above fixtures, we would get one car object with its `model` being null,
-and another one being null itself.
+It's possible to use chained references in JSON. These will be resolved properly. In the above example the model of `"car1"` will be resolved as `BMW`
 
 ### How to tell the library to process the annotations
 If you want to use the fields that you have previously annotated with `@Fixture`, you have to *initialize* the library.
@@ -422,7 +347,7 @@ So thanks to this setting, also the inherited fields can be set properly from th
 ObjectMapperProvider.setObjectMapper(ownMapper);
 ```
 
-## **Main feature 2**:<br/>Generating JSON fixture files from Java bean classes
+## Generating JSON fixture files from Java bean classes
 The second main feature of the library is the inverse of the first one: it helps you generate JSON fixtures based on the skeleton of a bean.
 In the next step (the way documented [above](https://github.com/corballis/json-fixtures#main-feature-1building-java-objects-from-json-fixture-files))
 you may reload the fixture generated by the current feature into a test field --
@@ -547,7 +472,7 @@ any test class, just like we would do any other ordinary fixture:
 private Sample2 sample2;
 ```
 
-## **Main feature 3**:<br/>The library's four handy assertion methods
+## The library's four handy assertion methods
 The library's third main feature is four assertion methods.
 They are the instance methods of class `FixtureAssert`.
 
