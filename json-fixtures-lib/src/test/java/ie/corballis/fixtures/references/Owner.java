@@ -1,5 +1,6 @@
 package ie.corballis.fixtures.references;
 
+import java.util.Objects;
 import java.util.Set;
 
 import static com.google.common.collect.Sets.newHashSet;
@@ -39,16 +40,11 @@ public class Owner {
             return false;
         }
         Owner owner = (Owner) o;
-        if (name != null ? !name.equals(owner.name) : owner.name != null) {
-            return false;
-        }
-        return !(things != null ? !things.equals(owner.things) : owner.things != null);
+        return Objects.equals(name, owner.name);
     }
 
     @Override
     public int hashCode() {
-        int result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (things != null ? things.hashCode() : 0);
-        return result;
+        return Objects.hash(name);
     }
 }

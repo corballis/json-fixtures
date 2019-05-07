@@ -1,7 +1,7 @@
 {
   "map": {
     "firstMap": {
-      "string": "#noReferenceString1",
+      "string": "string1",
       "sampleMap": {
         "car1": "#car01",
         "car2": "#car02",
@@ -10,7 +10,7 @@
       "sampleSet": []
     },
     "secondMap": {
-      "string": "#noReferenceString2",
+      "string": "string2",
       "sampleMap": {
         "car4": "#car04",
         "car5": "#car05"

@@ -7,7 +7,6 @@ import ie.corballis.fixtures.io.DefaultFixtureReader;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -65,7 +64,7 @@ public class BeanFactoryTest {
                                              "}");
     }
 
-    @Test(expected = IOException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void doesNotAllowInvalidPropertiesByDefault() throws Exception {
         factory.create(MyBean.class, "fixture1", "fixture4");
     }

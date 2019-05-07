@@ -20,17 +20,11 @@ public class MapAndSetSampleTest {
     public void testMapAndSet() throws Exception {
         FixtureAnnotations.initFixtures(this);
 
-        for (Map.Entry entry : map.entrySet()) {
-            System.out.println("Map entry:");
-            System.out.println("\tKey: " + entry.getKey());
-            System.out.println("\tValue: " + entry.getValue());
-        }
-
         Map<String, Car> sampleMap1 = newHashMap();
         sampleMap1.put("car1", new Car("unknownModel1"));
         sampleMap1.put("car2", new Car("unknownModel2"));
         sampleMap1.put("car3", new Car("unknownModel3"));
-        MapAndSetSample value1 = new MapAndSetSample("#noReferenceString1", sampleMap1, new HashSet<Car>());
+        MapAndSetSample value1 = new MapAndSetSample("string1", sampleMap1, new HashSet<Car>());
 
         Map<String, Car> sampleMap2 = newHashMap();
         sampleMap2.put("car4", new Car("unknownModel4"));
@@ -46,7 +40,7 @@ public class MapAndSetSampleTest {
         sampleSet.add(new Car("Model4"));
         sampleSet.add(new Car("unknownModel5"));
         sampleSet.add(new Car("Model5"));
-        MapAndSetSample value2 = new MapAndSetSample("#noReferenceString2", sampleMap2, sampleSet);
+        MapAndSetSample value2 = new MapAndSetSample("string2", sampleMap2, sampleSet);
 
         Map<String, MapAndSetSample> expected = newHashMap();
         expected.put("firstMap", value1);
