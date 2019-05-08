@@ -16,7 +16,7 @@ public class SuperTestClass {
     }
 
     @Test
-    public void testFieldInheritance(){
+    public void testFieldInheritance() {
         assertThat(superclassField).isNotNull();
         assertThat(superclassField.getStringProperty()).isEqualTo("property");
         assertThat(superclassField.getIntProperty()).isEqualTo(1);

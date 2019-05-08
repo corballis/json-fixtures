@@ -1,0 +1,34 @@
+{
+  "owner1": {
+    "name": "Owner1",
+    "things": "#things"
+  },
+  "owner2": {
+    "name": "Owner2",
+    "things": [
+      1
+    ]
+  },
+  "owner3": {
+    "name": "Owner3",
+    "things": []
+  },
+  "owner4": {
+    "name": "Owner4",
+    "things": "#things"
+  },
+  "things": [
+    "#thing1",
+    "#thing2"
+  ],
+  "thing1": {
+    "id": 1,
+    "name": "Thing1",
+    "owner": "#owner2"
+  },
+  "thing2": {
+    "id": 2,
+    "name": "Thing2",
+    "owner": null
+  }
+}

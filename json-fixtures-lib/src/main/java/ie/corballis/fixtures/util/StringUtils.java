@@ -13,4 +13,10 @@ public class StringUtils {
         return replaceAll(path, "\\", "/");
     }
 
+    // changes the Windows CR LF line endings to Unix LF type in a string
+    // so that the pretty strings are formatted uniformly, independently of the OS platform
+    public static String unifyLineEndings(String s) {
+        return s.replaceAll("\\r\\n", "\\\n");
+    }
+    
 }

@@ -12,4 +12,6 @@ public @interface Fixture {
 
     String[] value() default {};
 
+    String referencePrefix() default "#";
+
 }

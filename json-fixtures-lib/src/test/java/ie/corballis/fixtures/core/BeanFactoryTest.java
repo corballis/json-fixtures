@@ -1,6 +1,5 @@
 package ie.corballis.fixtures.core;
 
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.SimpleType;
 import ie.corballis.fixtures.io.ClassPathResource;
@@ -38,23 +37,14 @@ public class BeanFactoryTest {
 
         String asPrettyString = factory.createAsString(true, "fixture1");
         assertThat(asPrettyString).isEqualTo("{" + NEW_LINE +
-                                                     "  \"stringProperty\" : \"property\"," + NEW_LINE +
-                                                     "  \"intProperty\" : 1" + NEW_LINE +
-                                                     "}");
+                                             "  \"stringProperty\" : \"property\"," + NEW_LINE +
+                                             "  \"intProperty\" : 1" + NEW_LINE +
+                                             "}");
     }
 
-    @Test
-    public void createsEmptyBean() throws Exception {
-        MyBean bean = factory.create(MyBean.class);
-
-        assertThat(bean.getStringProperty()).isNull();
-        assertThat(bean.getIntProperty()).isEqualTo(0);
-
-        String asString = factory.createAsString();
-        assertThat(asString).isEqualTo("{}");
-
-        String asPrettyString = factory.createAsString(true);
-        assertThat(asPrettyString).isEqualTo("{}");
+    @Test(expected = IllegalArgumentException.class)
+    public void failsToCreateEmptyBean() throws Exception {
+        factory.create(MyBean.class);
     }
 
     @Test
@@ -69,12 +59,12 @@ public class BeanFactoryTest {
 
         String asPrettyString = factory.createAsString(true, "fixture1", "fixture2");
         assertThat(asPrettyString).isEqualTo("{" + NEW_LINE +
-                                                     "  \"stringProperty\" : \"property2\"," + NEW_LINE +
-                                                     "  \"intProperty\" : 1" + NEW_LINE +
-                                                     "}");
+                                             "  \"stringProperty\" : \"property2\"," + NEW_LINE +
+                                             "  \"intProperty\" : 1" + NEW_LINE +
+                                             "}");
     }
 
-    @Test(expected = UnrecognizedPropertyException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void doesNotAllowInvalidPropertiesByDefault() throws Exception {
         factory.create(MyBean.class, "fixture1", "fixture4");
     }
@@ -94,16 +84,15 @@ public class BeanFactoryTest {
         assertThat(bean.getListProperty()).containsExactly("element1", "element2", "element3");
 
         String asString = factory.createAsString("fixture1", "fixture3");
-        assertThat(asString).isEqualTo(
-                "{\"stringProperty\":\"property\",\"intProperty\":1,\"listProperty\":[\"element1\",\"element2\",\"element3\"]}");
+        assertThat(asString).isEqualTo("{\"stringProperty\":\"property\",\"intProperty\":1,\"listProperty\":[\"element1\",\"element2\",\"element3\"]}");
 
         String asPrettyString = factory.createAsString(true, "fixture1", "fixture3");
-        assertThat(asPrettyString).isEqualTo(
-                "{" + NEW_LINE +
-                        "  \"stringProperty\" : \"property\"," + NEW_LINE +
-                        "  \"intProperty\" : 1," + NEW_LINE +
-                        "  \"listProperty\" : [ \"element1\", \"element2\", \"element3\" ]" + NEW_LINE +
-                        "}");
+        assertThat(asPrettyString).isEqualTo("{" + NEW_LINE +
+                                             "  \"stringProperty\" : \"property\"," + NEW_LINE +
+                                             "  \"intProperty\" : 1," + NEW_LINE +
+                                             "  \"listProperty\" : [ \"element1\", \"element2\", \"element3\" ]" +
+                                             NEW_LINE +
+                                             "}");
     }
 
     @Test
@@ -136,17 +125,15 @@ public class BeanFactoryTest {
         assertThat(bean.getNested().getProp1()).isEqualTo("value");
 
         String asString = factory.createAsString("fixture3", "fixture5");
-        assertThat(asString)
-                .isEqualTo("{\"listProperty\":[\"element1\",\"element2\",\"element3\"],\"nested\":{\"prop1\":\"value\"}}");
+        assertThat(asString).isEqualTo("{\"listProperty\":[\"element1\",\"element2\",\"element3\"],\"nested\":{\"prop1\":\"value\"}}");
 
         String asPrettyString = factory.createAsString(true, "fixture3", "fixture5");
-        assertThat(asPrettyString)
-                .isEqualTo("{" + NEW_LINE +
-                                   "  \"listProperty\" : [ \"element1\", \"element2\", \"element3\" ]," + NEW_LINE +
-                                   "  \"nested\" : {" + NEW_LINE +
-                                   "    \"prop1\" : \"value\"" + NEW_LINE +
-                                   "  }" + NEW_LINE +
-                                   "}");
+        assertThat(asPrettyString).isEqualTo("{" + NEW_LINE +
+                                             "  \"listProperty\" : [ \"element1\", \"element2\", \"element3\" ]," +
+                                             NEW_LINE +
+                                             "  \"nested\" : {" + NEW_LINE +
+                                             "    \"prop1\" : \"value\"" + NEW_LINE +
+                                             "  }" + NEW_LINE +
+                                             "}");
     }
-
 }

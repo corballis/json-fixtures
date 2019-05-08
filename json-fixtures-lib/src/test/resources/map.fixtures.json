@@ -1,0 +1,59 @@
+{
+  "map": {
+    "firstMap": {
+      "string": "string1",
+      "sampleMap": {
+        "car1": "#car01",
+        "car2": "#car02",
+        "car3": "#car03"
+      },
+      "sampleSet": []
+    },
+    "secondMap": {
+      "string": "string2",
+      "sampleMap": {
+        "car4": "#car04",
+        "car5": "#car05"
+      },
+      "sampleSet": "#set"
+    }
+  },
+  "set": [
+    "#car01",
+    {
+      "model": "Model1"
+    },
+    "#car02",
+    {
+      "model": "Model2"
+    },
+    "#car03",
+    {
+      "model": "Model3"
+    },
+    "#car04",
+    {
+      "model": "Model4"
+    },
+    "#car06",
+    {
+      "model": "Model5"
+    }
+  ],
+  "car01": {
+    "model": "unknownModel1"
+  },
+  "car02": {
+    "model": "unknownModel2"
+  },
+  "car03": {
+    "model": "unknownModel3"
+  },
+  "car04": {
+    "model": "unknownModel4"
+  },
+  "car05": {
+    "model": "unknownModel5"
+  },
+  "car06": "#car05"
+}

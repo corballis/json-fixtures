@@ -15,7 +15,8 @@ import static com.google.common.collect.Maps.newHashMap;
 
 public class FixtureAnnotations {
 
-    private static final Map<Class<? extends Annotation>, FieldAnnotationProcessor<?>> annotationProcessorMap = newHashMap();
+    private static final Map<Class<? extends Annotation>, FieldAnnotationProcessor<?>> annotationProcessorMap =
+        newHashMap();
 
     static {
         annotationProcessorMap.put(Fixture.class, new FixtureFieldAnnotationProcessor());
@@ -24,7 +25,8 @@ public class FixtureAnnotations {
     public static void initFixtures(Object targetInstance) throws Exception {
         checkNotNull(targetInstance, "Target instance must not be null");
 
-        BeanFactory beanFactory = new BeanFactory(ObjectMapperProvider.getObjectMapper(), new ClassPathFixtureScanner());
+        BeanFactory beanFactory =
+            new BeanFactory(ObjectMapperProvider.getObjectMapper(), new ClassPathFixtureScanner());
         beanFactory.init();
 
         processAnnotations(targetInstance, beanFactory);
@@ -32,7 +34,7 @@ public class FixtureAnnotations {
 
     private static void processAnnotations(Object targetInstance, BeanFactory beanFactory) throws Exception {
         Class clazz = targetInstance.getClass();
-        while(clazz != null) {
+        while (clazz != null) {
             Field[] fields = clazz.getDeclaredFields();
             for (Field field : fields) {
                 for (Annotation annotation : field.getAnnotations()) {
@@ -41,8 +43,8 @@ public class FixtureAnnotations {
                         try {
                             new FieldSetter(targetInstance, field).set(bean);
                         } catch (Exception e) {
-                            throw new Exception("Problems setting field " + field.getName() + " annotated with "
-                                    + annotation, e);
+                            throw new Exception("Problems setting field " + field.getName() + " annotated with " +
+                                                annotation, e);
                         }
                     }
                 }
@@ -52,9 +54,10 @@ public class FixtureAnnotations {
     }
 
     @SuppressWarnings("unchecked")
-    private static Object generateFixture(
-            Annotation annotation, Field field,
-            BeanFactory beanFactory) throws IllegalAccessException, InstantiationException, IOException {
+    private static Object generateFixture(Annotation annotation, Field field, BeanFactory beanFactory) throws
+                                                                                                       IllegalAccessException,
+                                                                                                       InstantiationException,
+                                                                                                       IOException {
 
         Object result = null;
 

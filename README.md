@@ -1,6 +1,5 @@
-JSON Test Fixture library for Java [![Build Status](https://travis-ci.org/szmeti/json-fixtures.png?branch=master)](https://travis-ci.org/corballis/json-fixtures)
+JSON Test Fixture library for Java [![Build Status](https://travis-ci.org/corballis/json-fixtures.svg?branch=master)](https://travis-ci.org/corballis/json-fixtures)
 
-#Documentation for <br/>**JSON Fixtures** library
 `JSON Fixtures` is an open-source Java library that enables us, Java developers and testers, to test our applications quickly and easily, using fixtures that we have prepared in JSON format.
 
 >**Fixture** (according to [Wikipedia](https://en.wikipedia.org/wiki/Test_fixture#Software)):
@@ -10,8 +9,8 @@ JSON Test Fixture library for Java [![Build Status](https://travis-ci.org/szmeti
 
 The library provides three main features:
 
-- it builds Java bean objects from JSON fixture files for testing Java applications easily, with the use of only a few annotations;
-- it generates fixture files with default values based on the skeleton of a bean, to enable us to load it as a fixture next time;
+- it builds Java bean / map / list / set test-objects from JSON fixture files for testing Java applications easily, with the use of only a few annotations;
+- it generates fixture files with default values based on the skeleton of a bean, for enabling us to load it as a fixture next time;
 - it eases unit testing with four handy assertion methods (that are based on converting both the expected and the actual values (the results) to JSON strings).
 
 ## How to set up the library
@@ -21,27 +20,27 @@ To set up the library in a Java project, copy the following XML node, and paste 
 <dependency>
 	<groupId>ie.corballis</groupId>
 	<artifactId>json-fixtures-lib</artifactId>
-	<version>1.0.4</version>
+	<version>1.0.5</version>
 </dependency>
 ```
 From this time on, you can use the classes provided by the library.
 
-## **Main feature 1:**<br/>Building Java objects from JSON fixture files
+## Building Java objects from JSON fixture files
 One main feature of the library is that it can detect JSON fixture files on the project's classpath, process their content, and initialize the annotated fields of the test class with them for further testing. This process is almost totally automatic, it requires almost no extra configuration. And as JSON files can be created, edited and reproduced easily, this spares the developers or testers from having to build the object hierarchy of the test data from source code.
 
 ### How you should prepare the JSON fixture files
 If you want a JSON file to be recognized as a possible fixture resource, its name + extension must end in ".fixtures.json" (e.g. "cities.fixtures.json"). Locate your JSON fixture resources on the project's classpath, preferably in folder `src/main/test/resources`.
 
 The library supports both simple bean objects and collections; beans can also contain nested fields.
-Example: the below JSONs are all correct, and each one could be wrapped to the Java type following it:
+Example: the below JSONs are all correct, and each one can be wrapped to the Java type following it:
 
- - A simple bean object (with primitive fields):
+ - A simple bean object (with a String and a primitive field):
 
 ```json
 {
-	"person":{
-		"name":"John Doe",
-		"age":30
+	"person": {
+		"name": "John Doe",
+		"age": 30
 	}
 }
 ```
@@ -54,11 +53,11 @@ class Person {
 - A bean object with a nested field:
 ```json
 {
-	"dog":{
-		"color":"brown",
-		"owner":{
-			"name":"Alice",
-			"age":35
+	"dog": {
+		"color": "brown",
+		"owner": {
+			"name": "Alice",
+			"age": 35
 		}
 	}
 }
@@ -69,25 +68,26 @@ class Dog {
 	private Person owner;
 }
 ```
-- A type with a list of strings and a list of bean objects:
+- A type with a list of strings and a set of bean objects:
 ```json
 {
-	"inputData":{
-		"words":["word1","word2","word3"],
-		"people":[{"name":"x","age":25},
-		{"name":"y","age":40}]
+	"inputData": {
+		"words": ["word1", "word2", "word3"],
+		"people": [{"name": "x","age": 25},
+			{"name": "y","age": 40}]
 	}
 }
 ```
 ```java
 class InputData {
 	private List<String> words;
-	private List<Person> people;
+	private Set<Person> people;
 }
 ```
 
-### How to use the `@Fixture` annotation
-Open your test class. Choose the field(s) that you want to hold fixture data, and annotate them with `@Fixture`. Then specify the JSON fixture that you want to use to populate each field, by passing its JSON name to the annotation as parameter:
+### How to use the `@Fixture` annotation in a test class
+Open your test class. Choose the field(s) that you want to hold fixture data, and annotate it/them with `@Fixture`.
+Then specify the JSON fixture that you want to use to populate each field, by passing its fixture name to the annotation as parameter:
 ```java
 public class MyUnitTests {
 	@Fixture("person")
@@ -97,7 +97,7 @@ public class MyUnitTests {
 }
 ```
 
-> Note: the `@Fixture` annotation may be used only for fields!
+>**Note**: the `@Fixture` annotation may be used only for fields!
 
 An example where the annotated field is a collection itself:
 ```java
@@ -106,13 +106,17 @@ private List<String> cities;
 ```
 ```json
 {
-	"cities":["New York","Miskolc","Budapest"]
+	"cities": ["New York", "Miskolc", "Budapest"]
 }
 ```
 
-### **_Feature_**: default fixture name
-If you specify no fixture name(s) for the `@Fixture` annotation as parameter(s), the field annotation processor takes the field's name as the "default" fixture name.
+### Is there a default fixture name?
+If you specify no fixture name(s) for the `@Fixture` annotation as parameter(s), then the field annotation processor takes the field's name as the "default" fixture name.
 Therefore, if you are satisfied with the field name being equal to the fixture name, you needn't write anything after `@Fixture`.
+
+>**Note**: Fixture names are global on your classpath, so that you can reuse any fixture in any test class. If multiple fixtures found with the same name, the library will use the last fixture which has been scanned.
+This also means that you need to take care of the proper naming convention. 
+Tips: don't use too generic names like "person", "car"..etc. because that can be accidentally overridden. 
 
 **Example** - the following two solutions are equivalent (and, of course, both of them are correct):
 ```java
@@ -124,7 +128,7 @@ private Car car;
 private Car car;
 ```
 
-### **_Feature_**: `@Fixture`-annotated fields of superclasses
+### Accessing `@Fixture`-annotated fields of superclasses
 
 The field annotation processor looks for the `@Fixture`-annotated fields not only among the declared fields of the *actual* test class, but also among those of its superclasses.
 So if you extend a test class (`B`) from another one (`A`), where `A` declares a `@Fixture`-d field (`AField`),
@@ -145,9 +149,9 @@ public class B extends A {
 }
 ```
 
-### **_Feature_**: how to **merge** the contents of separate fixtures into one field
+### **Merging** the contents of multiple separate fixtures into one field
 
-Let's see a type that contains three fields:
+Let's see a type that declares three fields:
 ```java
 public class Car {
 	private int age;
@@ -155,26 +159,30 @@ public class Car {
 	private int id;
 }
 ```
-If you only work with 6-year-old black cars in your tests, and it's only the id that has to vary between the instances, you don't need to copy the `age + color` part into every single JSON fixture. In this case you can use a convenient JSON Fixture feature called `merging`.
+If you only work with 6-year-old black cars in your tests, and it's only the *id* that has to vary between the instances,
+then you don't need to copy the `age + color` part into every single JSON fixture.
+In this case you can use a convenient feature called `merging`.
 
-`Merging` permits that the parts of the data that finally makes up a Java object may be located in different places in the JSON resource. If you specify this right after the `@Fixture` annotation, JSON Fixtures performs the merging. Thus certain parts of the JSON fixture files may be written only once, but reused several times.
+`Merging` permits that the parts of the data that finally makes up a Java object may be located in different fixtures, in a distributed manner.
+If you specify the names of all of these fixtures as parameters of the `@Fixture` annotation, the library methods perform the merging.
+Thus certain parts of the fixture data may be written only once and reused several times.
 
-As an example, let's declare the `age + color` stem in the fixture only once, and then let's declare more cars with different IDs:
+**Example** - let's write `age + color` only once, and then let's declare multiple cars with unique IDs:
 ```json
 {
-	"stem":{
-		"age":6,
-		"color":"black"
+	"ageAndColor": {
+		"age": 6,
+		"color": "black"
 	},
-	"car1":{"id":1},
-	"car2":{"id":2}
+	"id1": {"id": 1},
+	"id2": {"id": 2}
 }
 ```
-Now these fixtures may be used in the Java code as follows:
+These fixtures may be used in the Java code as follows:
 ```java
-@Fixture({"stem","car1"})
+@Fixture({"ageAndColor", "id1"})
 private Car car1;
-@Fixture({"stem","car2"})
+@Fixture({"ageAndColor", "id2"})
 private Car car2;
 ```
 
@@ -185,9 +193,92 @@ Car{age=6, color='black', id=1}
 Car{age=6, color='black', id=2}
 ```
 
+>**Note**: Merging will be applied in the same order as you defined in the annotation. 
+If the two (or more) objects has the same properties, the value in the last one wins. 
+Currently merging lists or sets or any array like types are NOT supported. 
+Feel free to contribute and send us a pull request! 
+
+### Using references
+
+A big advantage of our library is that it supports the usage of **references** in the fixture files.
+
+A *reference* is a string beginning with `#` (by default), and ending in a valid fixture name.
+E.g. `"#car1"` is treated as a reference if and only if there *is* a fixture with the name `car1`;
+otherwise the library with fail.
+If you want to use different prefix for your references specify it in the `@Fixture` annotation.
+
+With references, you can embed fixtures into each other. This
+ - makes your fixture file much more tidy, ordered and structured;
+ - enables the re-use of data written in the fixture file only once.
+
+**Example** - let's say we have 3 people with some cars in their possession. These objects -- `person1`, `person2` and `person3` --
+will be the fixtures that we want to use in our test class.
+Alice and Bob are family members, so we know that they own the same two cars.
+Furthermore, we know that John's car is of the same model as their second one.
+
+Using references, we can write the necessary fixture file in the following very simple, compact format:
+
+```json
+{
+	"person1": {
+		"name": "Alice",
+		"cars": "#cars"
+	},
+	"person2": {
+		"name": "Bob",
+		"cars": "#cars"
+	},
+	"person3": {
+		"name": "John",
+		"cars": [
+			"#car"
+		]
+	},
+	"cars": [
+		{"model": "Audi"},
+		"#car"
+	],
+	"car": {"model": "Toyota"}
+}
+```
+
+Note that the usage of references eases *future modification*: if tomorrow Alice and Bob change their Audi to some other car,
+we have to rewrite the file only at one place, instead of having to modify it by every single person object
+that connects to the changed data.
+
+For more examples, see the tests in the library's test package `references`,
+together with the fixture files they rely on; especially
+[ReferencesTest](https://github.com/corballis/json-fixtures/blob/newFeatureReferences/json-fixtures-lib/src/test/java/ie/corballis/fixtures/references/ReferencesTest.java)
+and
+[references.fixtures.json](https://github.com/corballis/json-fixtures/blob/newFeatureReferences/json-fixtures-lib/src/test/resources/references.fixtures.json).
+
+Circular dependencies between fixture references are NOT permitted in any depth. It will be detected by the library.
+
+If you need to use object graph that are referring to the same object over and over again (e.g: joined hibernate entities), 
+split these to separated fixtures and link them in the test code. If you want to break circular dependencies,
+you can use `@JsonIdentityInfo` annotation provided by Jackson library.
+
+#### Reference chain
+
+Look at this JSON:
+
+```json
+{
+	"car1": {"model": "#model"},
+	"model": "#model2",
+	"model2": "#model3",
+	"model3": "BMW"
+}
+```
+
+It's possible to use chained references in JSON. These will be resolved properly. In the above example the model of `"car1"` will be resolved as `BMW`
+
 ### How to tell the library to process the annotations
-If you want to use the fields that you have previously annotated with `@Fixture`, you have to *initialize* Fixtures. Use the library's access method for it: `FixtureAnnotations.initFixtures()`.
-As it's the initialization process that sets the `@Fixture`-d fields, initialization must happen prior to their usage. Therefore -- if you are working with jUnit -- it's worth initializing in a method annotated with `org.junit.Before`, so it gets executed before every unit test, and always resets the field fixture values:
+If you want to use the fields that you have previously annotated with `@Fixture`, you have to *initialize* the library.
+Use the its access method for it: `FixtureAnnotations.initFixtures()`.
+As it's the initialization process that sets the `@Fixture`-d fields, initialization must happen prior to their usage.
+Therefore -- if you are working with jUnit -- it's worth initializing in a method annotated with `org.junit.Before`,
+so it always gets executed before running *any* unit test, and always resets the fixture field values:
 
 ```java
 @Before
@@ -195,10 +286,11 @@ public void init() throws Exception {
 	FixtureAnnotations.initFixtures(this);
 }
 ```
-The parameter of the method is a not-null instance of the class that contains the `@Fixture`-d fields. If the initialization is in the same class as these fields, let the parameter value be `this`.
+The parameter of the method is a not-null instance of the class that declares the `@Fixture`-d fields.
+If the initialization happens in the same class where these fields are, let the parameter value be `this`.
 
 
-#### **_Additional information_**:<br/>how to set an own object mapper
+#### **_Additional information_**:<br/>the settings of the library's default object mapper
 The way JSON Fixtures reads up the JSON files rests on [Jackson](https://github.com/FasterXML/jackson) library. It uses Jackson's `ObjectMapper` class for this purpose. JSON Fixtures configures its object mapper with only two basic characteristics:
 ```java
 objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
@@ -210,11 +302,18 @@ The first configuration makes the object mapper write dates as formatted strings
 The second one means that the object mapper should access every field, let its visibility modifier be anything.
 
 This gives you two important advantages:
- - You don't definitely need to declare getters/setters for the fields you use from the fixtures - the object mapper will still access them, even if they are private/protected.
+ - You don't definitely need to declare getters/setters for the fields you use from the fixtures -- the object mapper will still access them, even if they are private/protected.
  - Let's say you have a bean that inherits some fields from its superclass. You can write inherited fields (just as not inherited ones) into the fixture, as well, - the object mapper will fill *all existing* fields of the subclass object with the specified values properly.
  
-**Example**: let's say we have two beans - `A` and `B` -, where `B` extends `A`.
-Let both beans declare a protected field (`a` and `b`).
+>**Note**: for being able to map a JSON to an object,
+the object mapper requires that the class of the object has a default constructor.
+If your bean class does *not* declare any constructors, the default implicit constructor is available;
+so in this case you don't need to declare it explicitly.
+However, if you *have* defined parametrized constructor(s) for the class,
+you *must* explicitly define a default constructor, as well. 
+
+**Example**: let's say we have two beans -- `A` and `B` --, where `B` extends `A`.
+Let both beans declare an own protected field (`a` and `b`).
 Let B declare a `toString()`, which prints both its inherited and not inherited field.
 ```java
 public class A {
@@ -228,12 +327,12 @@ public class B extends A {
 	}
 }
 ```
-Now let's prepare a JSON fixture that describes a B instance, and contains both the `a` and `b` values:
+Now let's prepare a fixture that describes a B instance, and specifies both the `a` and `b` values:
 ```json
 {
-	"myBInstance":{
-		"a":5,
-		"b":6
+	"myBInstance": {
+		"a": 5,
+		"b": 6
 	}
 }
 ```
@@ -241,20 +340,21 @@ Loading this fixture into a Java object, invoking its `toString()` should result
 ```java
 a = 5, b = 6
 ```
-So thanks to this setting, also the inherited fields can be used properly from the fixtures.
+So thanks to this setting, also the inherited fields can be set properly from the fixtures.
 
-**However**, you might want to use your **own** object mapper with your pre-set custom configuration instead. - For this, perform the following static method call:
+**However**, you might want to use your **own** object mapper with your pre-set custom configuration instead. -- For this, perform the following static method call:
 ```java
 ObjectMapperProvider.setObjectMapper(ownMapper);
 ```
 
-## **Main feature 2**:<br/>Generating JSON Fixture files from Java bean classes
+## Generating JSON fixture files from Java bean classes
 The second main feature of the library is the inverse of the first one: it helps you generate JSON fixtures based on the skeleton of a bean.
 In the next step (the way documented [above](https://github.com/corballis/json-fixtures#main-feature-1building-java-objects-from-json-fixture-files))
-you may reload the fixture generated by the current feature into a test field -
+you may reload the fixture generated by the current feature into a test field --
 so, with combining these two features, you can easily produce full fixture data for your application under test.
 
-At this time the feature is available only as the `main` method of an executable class. But we are constantly developing it; according to our plans,
+At this time the feature is available only as the `main` method of an executable class.
+But we are continuously developing it; according to our plans,
 the feature will soon be available in the form of an IntelliJ plugin.
 
 ### How to generate a fixture file
@@ -280,7 +380,7 @@ You have to give it the following parameters:
  4. **The fixture name**: the name (without quotation marks) of the JSON object to create.
  <br/>E.g. if you type `sampleFixture1`, the generated fixture will look so:
  ```json
- 	"sampleFixture1":{
+ 	"sampleFixture1": {
  		(...)
  	}
  ```
@@ -294,7 +394,7 @@ You have to give it the following parameters:
   - there already is a fixture in the file with the specified fixture name - then, to avoid confusion or data loss, an exception is thrown.
   
   If the parameter's value is `false`, an exception is thrown to indicate "The fixture file already exists,
-  but the user didn't allow appending the new fixture to its end, so nothing could have been executed!".
+  but the user didn't allow appending the new fixture to its end, so nothing was able to get executed!".
 
 After having inputted the last parameter, the fixture should get created without any further user interaction.
 
@@ -362,23 +462,25 @@ If no file in the folder and with the filename we gave existed before, the conte
 }
 ```
 
->Note: when the file is generated, the fields of the bean's *superclass* (here `Sample1`) are also regarded!
+>**Note**: when the fixture is generated, the fields of the bean's *superclasses* (here `Sample1`) are also regarded!
 
 From now, we can modify the values in the file (e.g. rewrite `myString` to some other string), and
 [use](https://github.com/corballis/json-fixtures#how-to-use-the-fixture-annotation) the fixture from
-any test class, just like we would do it with any other ordinary fixture:
+any test class, just like we would do any other ordinary fixture:
 ```java
 @Fixture
 private Sample2 sample2;
 ```
 
-## **Main feature 3**:<br/>The library's four handy assertion methods
+## The library's four handy assertion methods
 The library's third main feature is four assertion methods.
 They are the instance methods of class `FixtureAssert`.
 
 Their working is based on converting both the expected and the actual values (aka the method results) to JSON-formatted strings, comparing these strings and asserting that they match each other. The implementation of the methods notably relies on the aid of [hamcrest](https://github.com/hamcrest/JavaHamcrest).
 
-The methods assert that the actual value matches the fixtures passed as parameters, with the following variations:
+The methods assert that the actual value matches the fixture(s) passed as parameters.
+
+There are the following variations:
 
  1. `matches(String... fixtures)`:
 allows both any array ordering and extra unexpected fields;
@@ -389,14 +491,14 @@ allows any array ordering, but no extra unexpected fields;
  4. `matchesExactlyWithStrictOrder(String... fixtures)`:
 allows only strict array ordering and no extra unexpected fields.
 
+>**Warning**: if you use a fixture as a parameter of the previous assertion methods, you **cannot** use references in it!
+During the execution of these methods no references are resolved; they all remain simple beginning-with-"#" strings.
+
 #### Example of usage:
 ```java
 import static ie.corballis.fixtures.assertion.FixtureAssert.assertThat;
 (...)
 public class TestClass {
-	@Fixture("expected")
-	private List<String> expected;
-
 	@Test
 	public void test2() throws JsonProcessingException {
 		List<String> actual = myMethodResult();

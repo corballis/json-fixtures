@@ -1,0 +1,67 @@
+{
+  "person1r": {
+    "age": 1,
+    "dog": {
+      "name": "XXX",
+      "age": 3.23,
+      "breed": "labrador"
+    },
+    "cars": []
+  },
+  "person2r1": {
+    "age": 2,
+    "dog": "#dog1"
+  },
+  "person2r2": {
+    "cars": [
+      {
+        "model": "Suzuki"
+      },
+      {
+        "model": "Toyota"
+      },
+      "#car1"
+    ]
+  },
+  "person3r": {
+    "age": 3,
+    "dog": null,
+    "cars": "#cars1"
+  },
+  "person4r": {
+    "age": 4,
+    "dog": "#dog2",
+    "cars": [
+      {
+        "model": "Seat"
+      },
+      "#car2"
+    ]
+  },
+  "person5r": "#person4r",
+  "cars1": [
+    "#car1",
+    "#car2"
+  ],
+  "dog1": {
+    "name": "YYY",
+    "age": "5.14",
+    "breed": "dalmatian"
+  },
+  "dog2": {
+    "name": "ZZZ",
+    "age": 4.44
+  },
+  "car1": {
+    "model": "Audi"
+  },
+  "car2": {
+    "model": "#model2"
+  },
+  "unknownReference": {
+    "model": "#noSuchFixture"
+  },
+  "model1": "Seat",
+  "model2": "#model3",
+  "model3": "Skoda"
+}

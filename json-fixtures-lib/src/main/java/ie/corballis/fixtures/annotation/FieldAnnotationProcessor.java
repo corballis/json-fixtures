@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 
 public interface FieldAnnotationProcessor<A extends Annotation> {
 
-    Object process(A annotation, Field field, BeanFactory factory) throws IllegalAccessException, IOException, InstantiationException;
+    Object process(A annotation, Field field, BeanFactory factory) throws IllegalAccessException, IOException,
+                                                                          InstantiationException;
 
 }

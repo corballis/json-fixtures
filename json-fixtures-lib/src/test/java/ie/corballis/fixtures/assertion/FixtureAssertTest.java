@@ -15,6 +15,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static ie.corballis.fixtures.util.StringUtils.unifyLineEndings;
 
 public class FixtureAssertTest {
 
@@ -126,10 +127,10 @@ public class FixtureAssertTest {
         FixtureAssert.assertThat(bean3).matchesExactlyWithStrictOrder("fixture1", "fixture2", "fixture3", "fixture5");
     }
 
-    private void assertFailureMessage(ComparisonFailure e, String relativePath) throws URISyntaxException,
-                                                                                        IOException {
+    private void assertFailureMessage(ComparisonFailure e, String relativePath) throws URISyntaxException, IOException {
         URI uri = getClass().getClassLoader().getResource(relativePath).toURI();
         String expectedMessage = FileUtils.readFileToString(new File(uri));
-        Assertions.assertThat(e.getMessage()).isEqualTo(expectedMessage);
+        Assertions.assertThat(unifyLineEndings(e.getMessage())).isEqualTo(unifyLineEndings(expectedMessage));
     }
+
 }
