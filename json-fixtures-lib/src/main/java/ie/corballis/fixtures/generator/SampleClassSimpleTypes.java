@@ -15,20 +15,20 @@ public class SampleClassSimpleTypes {
     private boolean boolField;
 
     // wrapper types -> the default initialization of the suitable primitive type
-    private Byte ByteField;
-    private Short ShortField = 6;
-    private Integer IntegerField = 7;
-    private Long LongField;
-    private Float FloatField;
-    private Double DoubleField;
-    private Character CharacterField;
-    private Boolean BooleanField;
+    private Byte byteFieldWrapper;
+    private Short shortFieldWrapper = 6;
+    private Integer integerFieldWrapper = 7;
+    private Long longFieldWrapper;
+    private Float floatFieldWrapper;
+    private Double doubleFieldWrapper;
+    private Character characterFieldWrapper;
+    private Boolean booleanFieldWrapper;
 
-    private String StringFieldDefault; // empty string
-    private String StringFieldInitialized = "xxx";
-    private Object ObjectFieldDefault; // default initialization (null)
-    private Date DateFieldDefault; // today
-    private Date DateFieldInitialized = new GregorianCalendar().getGregorianChange();
+    private String stringFieldDefault; // empty string
+    private String stringFieldInitialized = "xxx";
+    private Object objectFieldDefault; // default initialization (null)
+    private Date dateFieldDefault; // today
+    private Date dateFieldInitialized = new GregorianCalendar().getGregorianChange();
 
     @Override
     public String toString() {
@@ -41,19 +41,19 @@ public class SampleClassSimpleTypes {
                ",\ndoubleField=" + doubleField +
                ",\ncharField=" + charField +
                ",\nboolField=" + boolField +
-               ",\nByteField=" + ByteField +
-               ",\nShortField=" + ShortField +
-               ",\nIntegerField=" + IntegerField +
-               ",\nLongField=" + LongField +
-               ",\nFloatField=" + FloatField +
-               ",\nDoubleField=" + DoubleField +
-               ",\nCharacterField=" + CharacterField +
-               ",\nBooleanField=" + BooleanField +
-               ",\nStringFieldDefault='" + StringFieldDefault + '\'' +
-               ",\nStringFieldInitialized='" + StringFieldInitialized + '\'' +
-               ",\nObjectFieldDefault=" + ObjectFieldDefault +
-               ",\nDateFieldDefault=" + DateFieldDefault +
-               ",\nDateFieldInitialized=" + DateFieldInitialized +
+               ",\nbyteFieldWrapper=" + byteFieldWrapper +
+               ",\nshortFieldWrapper=" + shortFieldWrapper +
+               ",\nintegerFieldWrapper=" + integerFieldWrapper +
+               ",\nlongFieldWrapper=" + longFieldWrapper +
+               ",\nfloatFieldWrapper=" + floatFieldWrapper +
+               ",\ndoubleFieldWrapper=" + doubleFieldWrapper +
+               ",\ncharacterFieldWrapper=" + characterFieldWrapper +
+               ",\nbooleanFieldWrapper=" + booleanFieldWrapper +
+               ",\nstringFieldDefault='" + stringFieldDefault + '\'' +
+               ",\nstringFieldInitialized='" + stringFieldInitialized + '\'' +
+               ",\nobjectFieldDefault=" + objectFieldDefault +
+               ",\ndateFieldDefault=" + dateFieldDefault +
+               ",\ndateFieldInitialized=" + dateFieldInitialized +
                '}';
     }
 }

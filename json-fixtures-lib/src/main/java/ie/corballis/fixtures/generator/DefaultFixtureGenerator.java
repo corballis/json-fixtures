@@ -57,7 +57,7 @@ public class DefaultFixtureGenerator implements FixtureGenerator {
             } else if (type == String.class) {
                 setFieldValue(field, instance, "");
             } else if (type == Date.class) {
-                setFieldValue(field, instance, new Date());
+                setFieldValue(field, instance, new Date(0));
             } // enum and object field: remains null!
         }
     }

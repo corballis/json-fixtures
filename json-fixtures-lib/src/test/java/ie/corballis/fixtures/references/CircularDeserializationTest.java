@@ -5,6 +5,8 @@ import ie.corballis.fixtures.annotation.FixtureAnnotations;
 import ie.corballis.fixtures.assertion.FixtureAssert;
 import org.junit.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class CircularDeserializationTest {
 
     @Fixture
@@ -18,25 +20,14 @@ public class CircularDeserializationTest {
     public void circularObjectDeserializationIsAllowedWhenCircleIsNotInReferences() throws Exception {
         FixtureAnnotations.initFixtures(this);
 
-        Owner manualOwner1 = new Owner("Owner1");
-        Owner manualOwner2 = new Owner("Owner2");
-        Owner manualOwner3 = new Owner("Owner3");
-        Owner manualOwner4 = new Owner("Owner4");
+        Thing thing1 = getThing1(owner1);
+        Owner thing1Owner = thing1.getOwner();
+        Thing thing1ViaOwner = getThing1(thing1Owner);
+        assertThat(thing1).isSameAs(thing1ViaOwner);
+    }
 
-        Thing thing1 = new Thing(1, "Thing1", manualOwner2);
-        Thing thing2 = new Thing(2, "Thing2", null);
-
-        manualOwner1.add(thing1);
-        manualOwner1.add(thing1);
-
-        manualOwner2.add(thing1);
-
-        manualOwner4.add(thing1);
-        manualOwner4.add(thing2);
-
-        FixtureAssert.assertThat(owner1).isEqualTo(manualOwner1);
-        FixtureAssert.assertThat(owner3).isEqualTo(manualOwner3);
-        FixtureAssert.assertThat(owner4).isEqualTo(manualOwner4);
+    private Thing getThing1(Owner owner) {
+        return owner.getThings().stream().filter(thing -> thing.getName().equals("Thing1")).findFirst().get();
     }
 
 }

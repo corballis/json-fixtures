@@ -36,8 +36,8 @@ public class DefaultFileSystemWriter implements FileSystemWriter {
                 FileUtils.writeStringToFile(file, jsonOutputString);
             } else {
                 throw new Exception("The fixture file already exists," +
-                                    "but the user didn't allow appending the new fixture to its end" +
-                                    "- so nothing has been executed!");
+                                    " but the user didn't allow appending the new fixture to its end" +
+                                    " - so nothing has been executed!");
             }
         } else {
             Map<String, Object> map = new HashMap<String, Object>(); // wrapper map
