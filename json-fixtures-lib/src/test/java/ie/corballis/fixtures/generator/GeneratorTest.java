@@ -2,6 +2,7 @@ package ie.corballis.fixtures.generator;
 
 import ie.corballis.fixtures.annotation.Fixture;
 import ie.corballis.fixtures.annotation.FixtureAnnotations;
+import ie.corballis.fixtures.core.ObjectMapperProvider;
 import org.fest.assertions.api.Assertions;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
@@ -48,7 +49,10 @@ public class GeneratorTest {
         try {
             Map<String, Object> objectAsMap =
                 new DefaultFixtureGenerator().generateMapFromBeanDirectly(SampleClassCollections.class);
-            new DefaultFileSystemWriter().writeOut(folder, fileNamePrefix, fixtureName, objectAsMap, append);
+            new GeneratorFixtureWriter(ObjectMapperProvider.getObjectMapper()).write(folder,
+                                                                                     fileNamePrefix,
+                                                                                     fixtureName,
+                                                                                     objectAsMap);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

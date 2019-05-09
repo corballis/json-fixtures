@@ -10,6 +10,10 @@ public class Car {
     public Car() {
     }
 
+    public Car(Car car) {
+        this(car.model);
+    }
+
     @Override
     public String toString() {
         return "Car: model = " + model;

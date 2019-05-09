@@ -5,6 +5,19 @@ public class Dog {
     private double age;
     private String breed;
 
+    public Dog() {
+    }
+
+    public Dog(String name, double age, String breed) {
+        this.name = name;
+        this.age = age;
+        this.breed = breed;
+    }
+
+    public Dog(Dog dog) {
+        this(dog.name, dog.age, dog.breed);
+    }
+
     @Override
     public String toString() {
         return "Dog:" +
