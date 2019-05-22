@@ -1,0 +1,5 @@
+expected:<...,
+  "intProperty" : [1],
+  "listProperty" :...> but was:<...,
+  "intProperty" : [8],
+  "listProperty" :...>

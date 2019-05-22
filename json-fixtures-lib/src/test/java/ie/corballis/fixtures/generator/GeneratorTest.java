@@ -2,7 +2,6 @@ package ie.corballis.fixtures.generator;
 
 import ie.corballis.fixtures.annotation.Fixture;
 import ie.corballis.fixtures.annotation.FixtureAnnotations;
-import ie.corballis.fixtures.core.ObjectMapperProvider;
 import org.fest.assertions.api.Assertions;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
@@ -10,6 +9,7 @@ import org.junit.Test;
 import java.util.Map;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
 
@@ -49,10 +49,10 @@ public class GeneratorTest {
         try {
             Map<String, Object> objectAsMap =
                 new DefaultFixtureGenerator().generateMapFromBeanDirectly(SampleClassCollections.class);
-            new GeneratorFixtureWriter(ObjectMapperProvider.getObjectMapper()).write(folder,
-                                                                                     fileNamePrefix,
-                                                                                     fixtureName,
-                                                                                     objectAsMap);
+            new GeneratorFixtureWriter(settings().getObjectMapper()).write(folder,
+                                                                           fileNamePrefix,
+                                                                           fixtureName,
+                                                                           objectAsMap);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

@@ -1,8 +1,9 @@
 package ie.corballis.fixtures.annotation;
 
 import ie.corballis.fixtures.core.BeanFactory;
-import ie.corballis.fixtures.core.ObjectMapperProvider;
 import ie.corballis.fixtures.io.ClassPathFixtureScanner;
+import ie.corballis.fixtures.settings.Settings;
+import ie.corballis.fixtures.snapshot.SnapshotGenerator;
 import ie.corballis.fixtures.util.FieldSetter;
 
 import java.io.IOException;
@@ -12,6 +13,9 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
+import static ie.corballis.fixtures.settings.Settings.defaultSettings;
+import static ie.corballis.fixtures.settings.SettingsHolder.settings;
+import static ie.corballis.fixtures.settings.SettingsHolder.updateSettings;
 
 public class FixtureAnnotations {
 
@@ -23,11 +27,17 @@ public class FixtureAnnotations {
     }
 
     public static void initFixtures(Object targetInstance) throws Exception {
-        checkNotNull(targetInstance, "Target instance must not be null");
+        initFixtures(targetInstance, null);
+    }
 
-        BeanFactory beanFactory =
-            new BeanFactory(ObjectMapperProvider.getObjectMapper(), new ClassPathFixtureScanner());
+    public static void initFixtures(Object targetInstance, Settings.Builder settings) throws Exception {
+        checkNotNull(targetInstance, "Target instance must not be null");
+        updateSettings(settings == null ? defaultSettings() : settings.build());
+
+        ClassPathFixtureScanner scanner = new ClassPathFixtureScanner();
+        BeanFactory beanFactory = new BeanFactory(settings().getObjectMapper(), scanner);
         beanFactory.init();
+        new SnapshotGenerator(beanFactory, scanner).validateSnapshots();
 
         processAnnotations(targetInstance, beanFactory);
     }

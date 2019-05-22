@@ -1,9 +1,9 @@
 package ie.corballis.fixtures.generator;
 
-import ie.corballis.fixtures.core.ObjectMapperProvider;
-
 import java.util.Map;
 import java.util.Scanner;
+
+import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
@@ -41,9 +41,9 @@ public class Main {
 
     private static void out() throws Exception {
         Map<String, Object> objectAsMap = new DefaultFixtureGenerator().generateMapFromBeanDirectly(clazz);
-        new GeneratorFixtureWriter(ObjectMapperProvider.getObjectMapper()).write(folder,
-                                                                                 fileNamePrefix,
-                                                                                 fixtureName,
-                                                                                 objectAsMap);
+        new GeneratorFixtureWriter(settings().getObjectMapper()).write(folder,
+                                                                       fileNamePrefix,
+                                                                       fixtureName,
+                                                                       objectAsMap);
     }
 }

@@ -20,7 +20,6 @@ public abstract class AbstractFixtureWriter implements FixtureWriter {
         this.objectMapper = objectMapper;
     }
 
-    //TODO: add strategy for file name generation
     @Override
     public File write(String folder,
                       String fileNamePrefix,

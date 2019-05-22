@@ -1,0 +1,123 @@
+{
+  "_AUTO_GENERATED_FOR_": "ie.corballis.fixtures.assertion.FixtureAssertSnapshotsTest",
+  "toMatchSnapshotShouldFailWhenExistingSnapshotChanged-1": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  },
+  "toMatchSnapshotShouldFailWhenExistingSnapshotChanged-2": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  },
+  "toMatchSnapshotShouldNotFailWhenRegenerateIsOn-1": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  },
+  "toMatchSnapshotWithStrictOrderShouldFailWhenExistingSnapshotChanged-1": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  },
+  "toMatchSnapshotWithStrictOrderShouldFailWhenExistingSnapshotChanged-2": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  },
+  "toMatchSnapshotWithStrictOrderShouldNotFailWhenRegenerateIsOn-1": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  },
+  "toMatchSnapshotExactlyShouldFailWhenExistingSnapshotChanged-1": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  },
+  "toMatchSnapshotExactlyShouldFailWhenExistingSnapshotChanged-2": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  },
+  "toMatchSnapshotExactlyShouldNotFailWhenRegenerateIsOn-1": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  },
+  "toMatchSnapshotExactlyWithStrictOrderShouldFailWhenExistingSnapshotChanged-1": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  },
+  "toMatchSnapshotExactlyWithStrictOrderShouldFailWhenExistingSnapshotChanged-2": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  },
+  "toMatchSnapshotExactlyWithStrictOrderShouldNotFailWhenRegenerateIsOn-1": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  }
+}
