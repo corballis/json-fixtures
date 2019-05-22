@@ -24,6 +24,10 @@ public class Owner {
         things.add(thing);
     }
 
+    public Set<Thing> getThings() {
+        return things;
+    }
+
     @Override
     public String toString() {
         return "Owner:" +

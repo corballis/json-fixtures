@@ -1,74 +1,89 @@
 package ie.corballis.fixtures.generator;
 
-import ie.corballis.fixtures.annotation.Fixture;
-import ie.corballis.fixtures.annotation.FixtureAnnotations;
-import org.fest.assertions.api.Assertions;
-import org.hamcrest.MatcherAssert;
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.Resources.getResource;
 import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.hasEntry;
 
 public class GeneratorTest {
-    private static final String folder = System.getProperty("java.io.tmpdir");
+
+    private String folder;
     private static final String fileNamePrefix = "sample1";
     private static final String fixtureName = "sampleFixture1";
-    private static final boolean append = true;
+    private boolean append;
 
-    @Test
-    public void generateMapFromBeanDirectly() throws Exception {
-        DefaultFixtureGenerator defaultFixtureGenerator = new DefaultFixtureGenerator();
-        Map<String, Object> map = defaultFixtureGenerator.generateMapFromBeanDirectly(SampleClassCollections.class);
-        testMap(map);
-    }
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
-    private void testMap(Map<String, Object> map) {
-        Assertions.assertThat(map).isNotNull();
-        MatcherAssert.assertThat(map, hasEntry("doubleField", (Object) (-3.12)));
-        MatcherAssert.assertThat(map, hasEntry("StringFieldInitialized", (Object) "xxx"));
-        MatcherAssert.assertThat(map,
-                                 hasEntry("WrapperArrayFieldSpecified",
-                                          (Object) newArrayList(null, null, null, null, null)));
-        MatcherAssert.assertThat(map,
-                                 hasEntry("WrapperArrayFieldInitialized",
-                                          (Object) newArrayList(-0.23, 5.01, 99999.0, 35.674)));
-        MatcherAssert.assertThat(map,
-                                 hasEntry("primitiveArrayFieldInitialized", (Object) newArrayList(true, false, false)));
-        MatcherAssert.assertThat(map,
-                                 hasEntry("ArrayListFieldInitialized", (Object) newArrayList("jdh", "gvgv", "hh")));
-        MatcherAssert.assertThat(map,
-                                 hasEntry("StringArrayFieldInitialized", (Object) newArrayList("sjdhbh", "hdbhb")));
+    @Before
+    public void setUp() throws Exception {
+        folder = Files.createTempDirectory("fixture-generator").toAbsolutePath().toString();
     }
 
     @Test
-    public void fixtureFileWritingTest() {
-        try {
-            Map<String, Object> objectAsMap =
-                new DefaultFixtureGenerator().generateMapFromBeanDirectly(SampleClassCollections.class);
-            new GeneratorFixtureWriter(settings().getObjectMapper()).write(folder,
+    public void fixtureFileWritingTest() throws Exception {
+        append = true;
+
+        Map<String, Object> objectAsMap = new DefaultFixtureGenerator().generateMapFromBeanDirectly(
+            SampleClassCollections.class);
+        new GeneratorFixtureWriter(settings().getObjectMapper()).writeOut(folder, fileNamePrefix, fixtureName, objectAsMap, append);
+        String expectedContents = Resources.toString(getResource("generated.fixtures.out"), Charsets.UTF_8);
+        String actualContents = new String(Files.readAllBytes(Paths.get(folder, fileNamePrefix + ".fixtures.json")));
+        assertThat(actualContents).isEqualTo(expectedContents);
+    }
+
+    @Test
+    public void existingFileIsNotTouchedIfNotInAppendMode() throws Exception {
+        fixtureFileWritingTest();
+
+        append = false;
+        expectedException.expect(Exception.class);
+        expectedException.expectMessage("The fixture file already exists," +
+                                        " but the user didn't allow appending the new fixture to its end" +
+                                        " - so nothing has been executed!");
+
+        Map<String, Object> objectAsMap = new DefaultFixtureGenerator().generateMapFromBeanDirectly(
+            SampleClassCollections.class);
+        new GeneratorFixtureWriter(settings().getObjectMapper()).write(folder,
                                                                            fileNamePrefix,
                                                                            fixtureName,
                                                                            objectAsMap);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
     }
-
-    @Fixture("sampleFixture1")
-    private SampleClassCollections testField;
 
     @Test
-    public void rereadingGeneratedFixture() throws Exception {
-        FixtureAnnotations.initFixtures(this);
-        DefaultFixtureGenerator defaultFixtureGenerator = new DefaultFixtureGenerator();
-        SampleClassCollections obj =
-            (SampleClassCollections) defaultFixtureGenerator.createBeanInstance(SampleClassCollections.class);
-        Assertions.assertThat(testField).isNotNull();
-        // the date and date array fields won't be the same because 'new Date()' always returns the actual date and time
-        assertThat(testField).isEqualToIgnoringGivenFields(obj, "DateFieldDefault", "DateArrayFieldInitialized");
+    public void existingFileIsNotTouchedIfItAlreadyHasAFixtureWithTheSameName() throws Exception {
+        fixtureFileWritingTest();
+
+        append = true;
+        expectedException.expect(Exception.class);
+        expectedException.expectMessage("There already exists a fixture with fixture name 'sampleFixture1' in this fixture file!");
+
+        Map<String, Object> objectAsMap = new DefaultFixtureGenerator().generateMapFromBeanDirectly(
+            SampleClassCollections.class);
+        new GeneratorFixtureWriter(settings().getObjectMapper()).writeOut(folder, fileNamePrefix, fixtureName, objectAsMap, append);
     }
+
+    @Test
+    public void appendMode() throws Exception {
+        fixtureFileWritingTest();
+
+        Map<String, Object> objectAsMap = new DefaultFixtureGenerator().generateMapFromBeanDirectly(
+            SampleClassCollections.class);
+        new GeneratorFixtureWriter(settings().getObjectMapper()).writeOut(folder, fileNamePrefix, "sampleFixture2", objectAsMap, append);
+
+        String expectedContents = Resources.toString(getResource("generated2.fixtures.out"), Charsets.UTF_8);
+        String actualContents = new String(Files.readAllBytes(Paths.get(folder, fileNamePrefix + ".fixtures.json")));
+        assertThat(actualContents).isEqualTo(expectedContents);
+    }
+
 }

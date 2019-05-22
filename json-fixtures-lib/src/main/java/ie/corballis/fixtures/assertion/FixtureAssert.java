@@ -12,6 +12,7 @@ import uk.co.datumedge.hamcrest.json.SameJSONAs;
 import java.io.IOException;
 import java.util.function.Function;
 
+import static ie.corballis.fixtures.util.StringUtils.unifyLineEndings;
 import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -53,12 +54,6 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
             System.err.print(assertionError.getMessage());
             Assertions.assertThat(actualPrettyString).isEqualTo(expectedPrettyString);
         }
-    }
-
-    // changes the Windows CR LF line endings to Unix LF type in a string
-    // so that the pretty strings are formatted uniformly, independently of the OS platform
-    private String unifyLineEndings(String s) {
-        return s.replaceAll("\\r\\n", "\\\n");
     }
 
     private SameJSONAs<? super String> getExpectedJson(String expectedJson) {

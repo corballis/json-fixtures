@@ -22,6 +22,8 @@ import java.net.URISyntaxException;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static ie.corballis.fixtures.util.StringUtils.unifyLineEndings;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class FixtureAssertTest {
@@ -139,7 +141,7 @@ public class FixtureAssertTest {
     private void assertFailureMessage(ComparisonFailure e, String relativePath) throws URISyntaxException, IOException {
         URI uri = getClass().getClassLoader().getResource(relativePath).toURI();
         String expectedMessage = FileUtils.readFileToString(new File(uri));
-        Assertions.assertThat(e.getMessage()).isEqualTo(expectedMessage);
+        Assertions.assertThat(unifyLineEndings(e.getMessage())).isEqualTo(unifyLineEndings(expectedMessage));
     }
 
     @Test
