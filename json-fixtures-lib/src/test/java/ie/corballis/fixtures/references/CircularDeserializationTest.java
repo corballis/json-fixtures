@@ -2,7 +2,6 @@ package ie.corballis.fixtures.references;
 
 import ie.corballis.fixtures.annotation.Fixture;
 import ie.corballis.fixtures.annotation.FixtureAnnotations;
-import ie.corballis.fixtures.assertion.FixtureAssert;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
