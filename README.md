@@ -626,7 +626,7 @@ It leads to problems when you forget to move/rename the fixture file along with 
 
 # Property matching
 
-In real world projects often happen that some properties in your beans are generated automatically. In the following example our Person object is an entity that will be written to the database. 
+In real world projects it's often happen that some properties in your beans are generated automatically. In the following example our Person object is an entity that will be written to the database. 
 ```java
 @Entity
 @Table
