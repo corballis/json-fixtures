@@ -20,6 +20,7 @@ import java.util.*;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
+import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 
 public class BeanFactory {
 
@@ -33,11 +34,7 @@ public class BeanFactory {
     private Cache<String, JsonNode> fixtures = CacheBuilder.newBuilder().build();
 
     public BeanFactory() {
-        this((FixtureScanner) null);
-    }
-
-    public BeanFactory(FixtureScanner scanner) {
-        this(new ObjectMapper(), scanner);
+        this(settings().getObjectMapper(), settings().getFixtureScanner());
     }
 
     public BeanFactory(ObjectMapper objectMapper, FixtureScanner scanner) {
@@ -51,20 +48,16 @@ public class BeanFactory {
         this(objectMapper, null);
     }
 
-    public void initSilent() {
+    public void init() {
         try {
-            init();
-        } catch (IOException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
-
-    public void init() throws IOException {
-        if (scanner != null) {
-            List<Resource> resources = scanner.collectResources();
-            for (Resource resource : resources) {
-                registerAll(reader.read(resource));
+            if (scanner != null) {
+                List<Resource> resources = scanner.collectResources();
+                for (Resource resource : resources) {
+                    registerAll(reader.read(resource));
+                }
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

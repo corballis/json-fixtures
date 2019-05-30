@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import ie.corballis.fixtures.io.ClassPathFixtureScanner;
+import ie.corballis.fixtures.io.FixtureScanner;
 import ie.corballis.fixtures.io.write.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -14,12 +16,14 @@ public class Settings {
     private final FileNamingStrategy snapshotFileNamingStrategy;
     private final FileNamingStrategy generatorFileNamingStrategy;
     private final SnapshotFixtureWriter snapshotFixtureWriter;
+    private final FixtureScanner fixtureScanner;
 
     public Settings(Settings.Builder builder) {
         this.objectMapper = builder.objectMapper;
         this.snapshotFileNamingStrategy = builder.snapshotFileNamingStrategy;
         this.generatorFileNamingStrategy = builder.generatorFileNamingStrategy;
         this.snapshotFixtureWriter = builder.snapshotFixtureWriter;
+        this.fixtureScanner = builder.fixtureScanner;
     }
 
     public static Settings defaultSettings() {
@@ -42,8 +46,13 @@ public class Settings {
         return generatorFileNamingStrategy;
     }
 
+    public FixtureScanner getFixtureScanner() {
+        return fixtureScanner;
+    }
+
     public static class Builder {
 
+        private FixtureScanner fixtureScanner;
         private FileNamingStrategy snapshotFileNamingStrategy;
         private FileNamingStrategy generatorFileNamingStrategy;
         private SnapshotFixtureWriter snapshotFixtureWriter;
@@ -53,6 +62,7 @@ public class Settings {
             FileNamingStrategy fileNamingStrategy = TestClassFileNamingStrategy.getInstance();
             setDefaultObjectMapper();
             setDefaultSnapshotWriter();
+            setDefaultFixtureScanner();
             setSnapshotFileNamingStrategy(fileNamingStrategy);
             setGeneratorFileNamingStrategy(fileNamingStrategy);
         }
@@ -115,6 +125,15 @@ public class Settings {
         public Builder setSnapshotFolderPath(String snapshotFolderPath) {
             this.snapshotFixtureWriter = new StaticPathDefaultSnapshotWriter(snapshotFolderPath, objectMapper);
             return this;
+        }
+
+        public Builder setFixtureScanner(FixtureScanner fixtureScanner) {
+            this.fixtureScanner = fixtureScanner;
+            return this;
+        }
+
+        public Builder setDefaultFixtureScanner() {
+            return setFixtureScanner(new ClassPathFixtureScanner());
         }
 
         public Settings build() {

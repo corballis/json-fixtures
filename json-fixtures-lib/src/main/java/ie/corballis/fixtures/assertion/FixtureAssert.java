@@ -3,7 +3,6 @@ package ie.corballis.fixtures.assertion;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import ie.corballis.fixtures.core.BeanFactory;
-import ie.corballis.fixtures.io.ClassPathFixtureScanner;
 import ie.corballis.fixtures.snapshot.SnapshotGenerator;
 import org.fest.assertions.api.AbstractAssert;
 import org.fest.assertions.api.Assertions;
@@ -29,10 +28,9 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
     private static final SnapshotGenerator snapshotGenerator;
 
     static {
-        ClassPathFixtureScanner scanner = new ClassPathFixtureScanner();
-        beanFactory = new BeanFactory(settings().getObjectMapper(), scanner);
-        beanFactory.initSilent();
-        snapshotGenerator = new SnapshotGenerator(beanFactory, scanner);
+        beanFactory = new BeanFactory();
+        beanFactory.init();
+        snapshotGenerator = new SnapshotGenerator(beanFactory);
     }
 
     public FixtureAssert(Object actual) {
@@ -58,22 +56,28 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
         SameJSONAs<String> expected = matchingMode.getJsonMatcher(beanFactory.createAsString(fixtures));
 
         if (matchers.isEmpty()) {
-            try {
-                MatcherAssert.assertThat(settings().getObjectMapper().writeValueAsString(actual), expected);
-            } catch (AssertionError assertionError) {
-                failAndPrettyPrintError(assertionError, fixtures);
-            }
+            assertThatExpectedMatchesWithActual(expected,
+                                                settings().getObjectMapper().writeValueAsString(actual),
+                                                fixtures);
         } else {
             compareWithoutOverriddenProperties(matchingMode, matchers, fixtures);
             verifyOverriddenPropertiesOnly(matchers);
         }
     }
 
+    private void assertThatExpectedMatchesWithActual(SameJSONAs<String> expected,
+                                                     String actualJson,
+                                                     String[] fixtures) throws JsonProcessingException {
+        try {
+            MatcherAssert.assertThat(actualJson, expected);
+        } catch (AssertionError assertionError) {
+            failAndPrettyPrintError(assertionError, fixtures);
+        }
+    }
+
     private void failAndPrettyPrintError(AssertionError assertionError, String[] fixtures) throws
                                                                                            JsonProcessingException {
-        String actualPrettyString = unifyLineEndings(settings().getObjectMapper()
-                                                               .writer()
-                                                               .withDefaultPrettyPrinter()
+        String actualPrettyString = unifyLineEndings(settings().getObjectMapper().writerWithDefaultPrettyPrinter()
                                                                .writeValueAsString(actual));
         String expectedPrettyString = unifyLineEndings(beanFactory.createAsString(true, fixtures));
         System.err.print(assertionError.getMessage());
@@ -90,7 +94,7 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
         SameJSONAs<String> expectedMatcher =
             matchingMode.getJsonMatcher(settings().getObjectMapper().writeValueAsString(clearedExpected));
 
-        MatcherAssert.assertThat(clearedActualString, expectedMatcher);
+        assertThatExpectedMatchesWithActual(expectedMatcher, clearedActualString, fixtures);
     }
 
     private Object removeOverriddenProperties(Object entity, PropertyMatchers matchers) {

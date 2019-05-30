@@ -54,6 +54,17 @@ public class StaticPathDefaultSnapshotWriterTest {
         verifySavedFile(myFixture, "fixture6");
     }
 
+    @Test
+    public void shouldKeepOlderEntriesWhenUpdatingTheSnapshotFile() throws IOException {
+        assertThat(getFixtureFile()).doesNotExist();
+        snapshotWriter.write(getClass(), "myFixture", person1r);
+        verifySavedFile("myFixture", "person1r");
+
+        snapshotWriter.write(getClass(), "myFixture2", fixture6);
+        verifySavedFile("myFixture2", "fixture6");
+        verifySavedFile("myFixture", "person1r");
+    }
+
     private void verifySavedFile(String fixtureName, String expectedFixture) throws IOException {
         File fixtureFile = getFixtureFile();
         String s = FileUtils.readFileToString(fixtureFile);

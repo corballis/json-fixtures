@@ -32,7 +32,7 @@ public class SnapshotGeneratorTest {
     @Before
     public void setUp() throws Exception {
         BeanFactory beanFactory = new BeanFactory(settings().getObjectMapper(), scanner);
-        beanFactory.initSilent();
+        beanFactory.init();
 
         snapshotGenerator = new SnapshotGenerator(beanFactory, scanner);
     }
@@ -46,7 +46,8 @@ public class SnapshotGeneratorTest {
 
         expectedException.expectMessage("ie.corballis.fixtures.snapshot.NoSuchClass does not exist anymore in ");
         expectedException.expectMessage("invalid-fixture.json' file. " + "If the file has been renamed/removed, " +
-                                        "please update the value of _AUTO_GENERATED_FOR_ property");
+                                        "please update the value of _AUTO_GENERATED_FOR_ property " +
+                                        "and move the file to the correct location");
 
         snapshotGenerator.validateSnapshots();
     }

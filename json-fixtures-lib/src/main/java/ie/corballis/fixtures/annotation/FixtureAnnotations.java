@@ -1,7 +1,6 @@
 package ie.corballis.fixtures.annotation;
 
 import ie.corballis.fixtures.core.BeanFactory;
-import ie.corballis.fixtures.io.ClassPathFixtureScanner;
 import ie.corballis.fixtures.settings.Settings;
 import ie.corballis.fixtures.snapshot.SnapshotGenerator;
 import ie.corballis.fixtures.util.FieldSetter;
@@ -15,7 +14,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 import static ie.corballis.fixtures.core.InvocationContextHolder.initTestExecutorThread;
 import static ie.corballis.fixtures.settings.Settings.defaultSettings;
-import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 import static ie.corballis.fixtures.settings.SettingsHolder.updateSettings;
 import static java.lang.Thread.currentThread;
 
@@ -37,10 +35,9 @@ public class FixtureAnnotations {
         updateSettings(settings == null ? defaultSettings() : settings.build());
         initTestExecutorThread(currentThread());
 
-        ClassPathFixtureScanner scanner = new ClassPathFixtureScanner();
-        BeanFactory beanFactory = new BeanFactory(settings().getObjectMapper(), scanner);
+        BeanFactory beanFactory = new BeanFactory();
         beanFactory.init();
-        new SnapshotGenerator(beanFactory, scanner).validateSnapshots();
+        new SnapshotGenerator(beanFactory).validateSnapshots();
 
         processAnnotations(targetInstance, beanFactory);
     }
@@ -56,8 +53,8 @@ public class FixtureAnnotations {
                         try {
                             new FieldSetter(targetInstance, field).set(bean);
                         } catch (Exception e) {
-                            throw new Exception("Problems setting field " + field.getName() + " annotated with " +
-                                                annotation, e);
+                            throw new Exception(
+                                "Problems setting field " + field.getName() + " annotated with " + annotation, e);
                         }
                     }
                 }

@@ -5,15 +5,12 @@ import ie.corballis.fixtures.annotation.Fixture;
 import ie.corballis.fixtures.annotation.FixtureAnnotations;
 import ie.corballis.fixtures.assertion.FixtureAssert;
 import ie.corballis.fixtures.core.BeanFactory;
-import ie.corballis.fixtures.io.ClassPathFixtureScanner;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
-
-import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 
 public class ReferencesTest {
     // fixtures of file "references.fixtures.json", with the same content as file "expected.fixtures.json",
@@ -48,7 +45,7 @@ public class ReferencesTest {
 
     @Test
     public void shouldFailWhenUnknownReferenceFound() throws IOException {
-        BeanFactory factory = new BeanFactory(settings().getObjectMapper(), new ClassPathFixtureScanner());
+        BeanFactory factory = new BeanFactory();
         factory.init();
 
         expectedException.expect(IllegalArgumentException.class);
@@ -63,7 +60,7 @@ public class ReferencesTest {
 
     @Test
     public void primitivesForBaseObjectAreNotAllowed() throws IOException {
-        BeanFactory factory = new BeanFactory(settings().getObjectMapper(), new ClassPathFixtureScanner());
+        BeanFactory factory = new BeanFactory();
         factory.init();
 
         expectedException.expect(IllegalArgumentException.class);

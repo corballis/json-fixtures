@@ -5,7 +5,6 @@ import ie.corballis.fixtures.annotation.FixtureAnnotations;
 import ie.corballis.fixtures.core.AsyncTester;
 import ie.corballis.fixtures.core.BeanFactory;
 import ie.corballis.fixtures.core.MyBean;
-import ie.corballis.fixtures.io.ClassPathFixtureScanner;
 import ie.corballis.fixtures.io.write.SnapshotFixtureWriter;
 import ie.corballis.fixtures.settings.Settings;
 import org.apache.commons.io.FileUtils;
@@ -22,7 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static ie.corballis.fixtures.assertion.FixtureAssert.assertThat;
-import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -42,7 +40,7 @@ public class FixtureAssertSnapshotsTest {
     public void toMatchSnapshotInNewThreadShouldFollowMethodInvocationIndex() throws Exception {
         init();
 
-        BeanFactory beanFactory = new BeanFactory(settings().getObjectMapper(), new ClassPathFixtureScanner());
+        BeanFactory beanFactory = new BeanFactory();
         beanFactory.init();
 
         assertThat(beanFactory.getFixtureAsJsonNode("toMatchSnapshotInNewThreadShouldFollowKeepMethodInvocationIndex-1"))
