@@ -674,4 +674,4 @@ public void myTest() throws IOException {
                                                 "expectedPerson");
 }
 ```
-**Note**: When you use nested properties inside an object of a list (`cars.model`) we assume that you want that matcher to apply every instance of that list. It's not supported to specify mathers for the list elements one by one.
+**Note**: When you use nested properties inside an object of a list (`cars.model`) we assume that you want that matcher to be applied to every instance of that list. It's not supported to specify mathers for the list elements one by one.
