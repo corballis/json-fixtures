@@ -1,7 +1,11 @@
-expected:<...
-  "listProperty" : [[ "element1", "element2", "element3" ]],
-  "nested" : null
-...> but was:<...
-  "listProperty" : [null],
-  "nested" : null
-...>
+expected:<...,
+  "listProperty": [[
+    "element1",
+    "element2",
+    "element3"
+  ]],
+  "nested": null
+}...> but was:<...,
+  "listProperty": [null],
+  "nested": null
+}...>

@@ -119,5 +119,37 @@
       "element3"
     ],
     "nested": null
+  },
+  "toMatchSnapshotInNewThreadShouldFollowKeepMethodInvocationIndex-1": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  },
+  "toMatchSnapshotInNewThreadShouldFollowKeepMethodInvocationIndex-2": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": null,
+    "nested": null
+  },
+  "toMatchSnapshotInNewThreadShouldFollowMethodInvocationIndex-1": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  },
+  "toMatchSnapshotInNewThreadShouldFollowMethodInvocationIndex-2": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": null,
+    "nested": null
   }
 }

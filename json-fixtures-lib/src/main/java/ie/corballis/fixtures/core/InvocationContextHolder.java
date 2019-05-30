@@ -1,42 +1,63 @@
 package ie.corballis.fixtures.core;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class InvocationContextHolder {
 
-    private static ThreadLocal<InvocationContext> invocationContext = new ThreadLocal<>();
+    private static ThreadLocal<InvocationContext> invocationContext = new InheritableThreadLocal<>();
 
     public static void updateContext(String testMethodName) {
-        InvocationContext previousInvocation = invocationContext.get();
-        boolean executingNewTestcase = previousInvocation == null || !previousInvocation.name.equals(testMethodName);
+        InvocationContext previousInvocation = initOrGet();
+
+        boolean executingNewTestcase =
+            previousInvocation.name == null || !previousInvocation.name.equals(testMethodName);
         if (executingNewTestcase) {
-            invocationContext.remove();
-            invocationContext.set(new InvocationContext(testMethodName));
+            previousInvocation.reset(testMethodName);
         } else {
-            invocationContext.get().incrementInvocations();
+            previousInvocation.incrementInvocations();
         }
     }
 
+    private static InvocationContext initOrGet() {
+        InvocationContext previousInvocation = invocationContext.get();
+        if (previousInvocation == null) {
+            previousInvocation = new InvocationContext();
+            invocationContext.set(previousInvocation);
+        }
+        return previousInvocation;
+    }
+
+    public static void initTestExecutorThread(Thread testExecutorThread) {
+        initOrGet().testExecutorThread = testExecutorThread;
+    }
+
+    public static Thread getTestExecutorThread() {
+        return initOrGet().testExecutorThread;
+    }
+
     public static String currentSnapshotName() {
-        return invocationContext.get().getName();
+        return initOrGet().getName();
     }
 
     private static class InvocationContext {
 
         private String name;
-        private AtomicInteger invocationCount = new AtomicInteger();
+        private Thread testExecutorThread;
+        private int invocationCount;
 
-        public InvocationContext(String name) {
-            this.name = name;
+        private InvocationContext() {
             incrementInvocations();
         }
 
-        public void incrementInvocations() {
-            invocationCount.incrementAndGet();
+        private void incrementInvocations() {
+            ++invocationCount;
         }
 
-        public String getName() {
-            return name + "-" + invocationCount.get();
+        private void reset(String testMethodName) {
+            invocationCount = 1;
+            name = testMethodName;
+        }
+
+        private String getName() {
+            return name + "-" + invocationCount;
         }
     }
 

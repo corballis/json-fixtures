@@ -13,9 +13,11 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
+import static ie.corballis.fixtures.core.InvocationContextHolder.initTestExecutorThread;
 import static ie.corballis.fixtures.settings.Settings.defaultSettings;
 import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 import static ie.corballis.fixtures.settings.SettingsHolder.updateSettings;
+import static java.lang.Thread.currentThread;
 
 public class FixtureAnnotations {
 
@@ -33,6 +35,7 @@ public class FixtureAnnotations {
     public static void initFixtures(Object targetInstance, Settings.Builder settings) throws Exception {
         checkNotNull(targetInstance, "Target instance must not be null");
         updateSettings(settings == null ? defaultSettings() : settings.build());
+        initTestExecutorThread(currentThread());
 
         ClassPathFixtureScanner scanner = new ClassPathFixtureScanner();
         BeanFactory beanFactory = new BeanFactory(settings().getObjectMapper(), scanner);

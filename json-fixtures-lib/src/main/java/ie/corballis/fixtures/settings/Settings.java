@@ -73,6 +73,8 @@ public class Settings {
 
         private static ObjectMapper defaultObjectMapper() {
             ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            objectMapper.setDefaultPrettyPrinter(new JsonFixturesPrettyPrinter());
             objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
             objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
             return objectMapper;

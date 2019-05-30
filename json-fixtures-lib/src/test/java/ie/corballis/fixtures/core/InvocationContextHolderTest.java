@@ -23,30 +23,16 @@ public class InvocationContextHolderTest {
     }
 
     @Test
-    public void shouldUseDifferentContextInEachThread() throws InterruptedException {
-        Thread t1 = new Thread() {
-            @Override
-            public void run() {
-                InvocationContextHolder.updateContext("myMethod");
+    public void shouldUseUpdateContextInEachThread() throws InterruptedException {
+        InvocationContextHolder.updateContext("myOtherMethod");
+        assertThat(InvocationContextHolder.currentSnapshotName()).isEqualTo("myOtherMethod-1");
 
-                Thread t2 = new Thread() {
-                    @Override
-                    public void run() {
-                        InvocationContextHolder.updateContext("myMethod");
-                        assertThat(InvocationContextHolder.currentSnapshotName()).isEqualTo("myMethod-1");
-                    }
-                };
-                t2.start();
-                try {
-                    t2.join();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-
-                assertThat(InvocationContextHolder.currentSnapshotName()).isEqualTo("myMethod-1");
-            }
-        };
-        t1.start();
-        t1.join();
+        AsyncTester asyncTester = new AsyncTester(() -> {
+            InvocationContextHolder.updateContext("myOtherMethod");
+            assertThat(InvocationContextHolder.currentSnapshotName()).isEqualTo("myOtherMethod-2");
+        });
+        asyncTester.start();
+        asyncTester.verifyNoErrors();
+        assertThat(InvocationContextHolder.currentSnapshotName()).isEqualTo("myOtherMethod-2");
     }
 }

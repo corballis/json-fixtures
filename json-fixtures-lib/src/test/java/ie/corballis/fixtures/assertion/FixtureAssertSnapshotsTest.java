@@ -2,7 +2,10 @@ package ie.corballis.fixtures.assertion;
 
 import ie.corballis.fixtures.annotation.Fixture;
 import ie.corballis.fixtures.annotation.FixtureAnnotations;
+import ie.corballis.fixtures.core.AsyncTester;
+import ie.corballis.fixtures.core.BeanFactory;
 import ie.corballis.fixtures.core.MyBean;
+import ie.corballis.fixtures.io.ClassPathFixtureScanner;
 import ie.corballis.fixtures.io.write.SnapshotFixtureWriter;
 import ie.corballis.fixtures.settings.Settings;
 import org.apache.commons.io.FileUtils;
@@ -18,6 +21,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static ie.corballis.fixtures.assertion.FixtureAssert.assertThat;
+import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -34,28 +39,49 @@ public class FixtureAssertSnapshotsTest {
     private SnapshotFixtureWriter snapshotFixtureWriter;
 
     @Test
+    public void toMatchSnapshotInNewThreadShouldFollowMethodInvocationIndex() throws Exception {
+        init();
+
+        BeanFactory beanFactory = new BeanFactory(settings().getObjectMapper(), new ClassPathFixtureScanner());
+        beanFactory.init();
+
+        assertThat(beanFactory.getFixtureAsJsonNode("toMatchSnapshotInNewThreadShouldFollowKeepMethodInvocationIndex-1"))
+            .isNotNull();
+        assertThat(beanFactory.getFixtureAsJsonNode("toMatchSnapshotInNewThreadShouldFollowKeepMethodInvocationIndex-2"))
+            .isNotNull();
+
+        assertThat(bean).toMatchSnapshot();
+
+        AsyncTester asyncTester = new AsyncTester(() -> {
+            try {
+                assertThat(bean2).toMatchSnapshot();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        asyncTester.start();
+        asyncTester.verifyNoErrors();
+    }
+
+    public void init() throws Exception {
+        FixtureAnnotations.initFixtures(this);
+    }
+
+    @Test
     public void toMatchSnapshotShouldFailWhenExistingSnapshotChanged() throws Exception {
         init();
 
-        FixtureAssert.assertThat(bean).toMatchSnapshot();
+        assertThat(bean).toMatchSnapshot();
 
         try {
             bean.setIntProperty(8);
-            FixtureAssert.assertThat(bean).toMatchSnapshot();
+            assertThat(bean).toMatchSnapshot();
         } catch (ComparisonFailure e) {
             assertFailureMessage(e, "toMatchSnapshotShouldFailWhenExistingSnapshotChanged");
             return;
         }
 
         Assertions.fail("Fixture assertion should have been failed, ");
-    }
-
-    public void init() throws Exception {
-        FixtureAnnotations.initFixtures(this, createSettings());
-    }
-
-    private Settings.Builder createSettings() {
-        return new Settings.Builder();
     }
 
     private void assertFailureMessage(ComparisonFailure e, String relativePath) throws URISyntaxException, IOException {
@@ -71,9 +97,9 @@ public class FixtureAssertSnapshotsTest {
         builder.setSnapshotFixtureWriter(snapshotFixtureWriter);
         FixtureAnnotations.initFixtures(this, builder);
 
-        FixtureAssert.assertThat(bean).toMatchSnapshot();
+        assertThat(bean).toMatchSnapshot();
         bean.setIntProperty(8);
-        FixtureAssert.assertThat(bean).toMatchSnapshot(true);
+        assertThat(bean).toMatchSnapshot(true);
 
         verify(snapshotFixtureWriter, times(1)).write(getClass(),
                                                       "toMatchSnapshotShouldNotFailWhenRegenerateIsOn-2",
@@ -85,12 +111,12 @@ public class FixtureAssertSnapshotsTest {
     public void toMatchSnapshotWithStrictOrderShouldFailWhenExistingSnapshotChanged() throws Exception {
         init();
 
-        FixtureAssert.assertThat(bean).toMatchSnapshotWithStrictOrder();
+        assertThat(bean).toMatchSnapshotWithStrictOrder();
 
         try {
             bean.getListProperty().remove("element1");
             bean.getListProperty().add("element1");
-            FixtureAssert.assertThat(bean).toMatchSnapshotWithStrictOrder();
+            assertThat(bean).toMatchSnapshotWithStrictOrder();
         } catch (ComparisonFailure e) {
             assertFailureMessage(e, "toMatchSnapshotWithStrictOrderShouldFailWhenExistingSnapshotChanged");
             return;
@@ -105,10 +131,10 @@ public class FixtureAssertSnapshotsTest {
         builder.setSnapshotFixtureWriter(snapshotFixtureWriter);
         FixtureAnnotations.initFixtures(this, builder);
 
-        FixtureAssert.assertThat(bean).toMatchSnapshotWithStrictOrder();
+        assertThat(bean).toMatchSnapshotWithStrictOrder();
         bean.getListProperty().remove("element1");
         bean.getListProperty().add("element1");
-        FixtureAssert.assertThat(bean).toMatchSnapshotWithStrictOrder(true);
+        assertThat(bean).toMatchSnapshotWithStrictOrder(true);
 
         verify(snapshotFixtureWriter, times(1)).write(eq(getClass()),
                                                       eq("toMatchSnapshotWithStrictOrderShouldNotFailWhenRegenerateIsOn-2"),
@@ -120,10 +146,10 @@ public class FixtureAssertSnapshotsTest {
     public void toMatchSnapshotExactlyShouldFailWhenExistingSnapshotChanged() throws Exception {
         init();
 
-        FixtureAssert.assertThat(bean).toMatchSnapshotExactly();
+        assertThat(bean).toMatchSnapshotExactly();
 
         try {
-            FixtureAssert.assertThat(bean2).toMatchSnapshotExactly();
+            assertThat(bean2).toMatchSnapshotExactly();
         } catch (ComparisonFailure e) {
             assertFailureMessage(e, "toMatchSnapshotExactlyShouldFailWhenExistingSnapshotChanged");
             return;
@@ -138,8 +164,8 @@ public class FixtureAssertSnapshotsTest {
         builder.setSnapshotFixtureWriter(snapshotFixtureWriter);
         FixtureAnnotations.initFixtures(this, builder);
 
-        FixtureAssert.assertThat(bean).toMatchSnapshotWithStrictOrder();
-        FixtureAssert.assertThat(bean2).toMatchSnapshotWithStrictOrder(true);
+        assertThat(bean).toMatchSnapshotWithStrictOrder();
+        assertThat(bean2).toMatchSnapshotWithStrictOrder(true);
 
         verify(snapshotFixtureWriter, times(1)).write(eq(getClass()),
                                                       eq("toMatchSnapshotExactlyShouldNotFailWhenRegenerateIsOn-2"),
@@ -151,10 +177,10 @@ public class FixtureAssertSnapshotsTest {
     public void toMatchSnapshotExactlyWithStrictOrderShouldFailWhenExistingSnapshotChanged() throws Exception {
         init();
 
-        FixtureAssert.assertThat(bean).toMatchSnapshotExactlyWithStrictOrder();
+        assertThat(bean).toMatchSnapshotExactlyWithStrictOrder();
 
         try {
-            FixtureAssert.assertThat(bean2).toMatchSnapshotExactlyWithStrictOrder();
+            assertThat(bean2).toMatchSnapshotExactlyWithStrictOrder();
         } catch (ComparisonFailure e) {
             assertFailureMessage(e, "toMatchSnapshotExactlyWithStrictOrderShouldFailWhenExistingSnapshotChanged");
             return;
@@ -169,8 +195,8 @@ public class FixtureAssertSnapshotsTest {
         builder.setSnapshotFixtureWriter(snapshotFixtureWriter);
         FixtureAnnotations.initFixtures(this, builder);
 
-        FixtureAssert.assertThat(bean).toMatchSnapshotWithStrictOrder();
-        FixtureAssert.assertThat(bean2).toMatchSnapshotWithStrictOrder(true);
+        assertThat(bean).toMatchSnapshotWithStrictOrder();
+        assertThat(bean2).toMatchSnapshotWithStrictOrder(true);
 
         verify(snapshotFixtureWriter, times(1)).write(eq(getClass()),
                                                       eq("toMatchSnapshotExactlyWithStrictOrderShouldNotFailWhenRegenerateIsOn-2"),

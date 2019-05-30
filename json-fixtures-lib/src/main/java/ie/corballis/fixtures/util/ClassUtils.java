@@ -5,6 +5,8 @@ import org.junit.Test;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import static ie.corballis.fixtures.core.InvocationContextHolder.getTestExecutorThread;
+
 public class ClassUtils {
 
     public static ClassLoader getDefaultClassLoader() {
@@ -22,7 +24,7 @@ public class ClassUtils {
     }
 
     public static String getTestMethodName() {
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        StackTraceElement[] stackTrace = getTestExecutorThread().getStackTrace();
         return Arrays.stream(stackTrace)
                      .filter(ClassUtils::isTestMethod)
                      .map(StackTraceElement::getMethodName)
@@ -41,8 +43,12 @@ public class ClassUtils {
         }
     }
 
+    public static Class getTestClass() {
+        return getClass(getTestClassName());
+    }
+
     public static String getTestClassName() {
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        StackTraceElement[] stackTrace = getTestExecutorThread().getStackTrace();
         return Arrays.stream(stackTrace)
                      .filter(ClassUtils::isTestMethod)
                      .map(StackTraceElement::getClassName)
@@ -50,10 +56,6 @@ public class ClassUtils {
                      .orElseThrow(() -> new IllegalArgumentException("Could not find test class. " +
                                                                      "This could happen because there was no method annotated with @Test. " +
                                                                      "This assertion only supports JUnit testcases."));
-    }
-
-    public static Class getTestClass() {
-        return getClass(getTestClassName());
     }
 
     public static Class getClass(String className) {
