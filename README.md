@@ -623,3 +623,55 @@ Sometimes you need to move your test classes to other packages or rename them to
 It leads to problems when you forget to move/rename the fixture file along with your test class. In order to prevent these situations, every snapshot fixture file contains a special property called: `_AUTO_GENERATED_FOR_`. This property stores the fully qualified class name of test which it was generated for. Based on this property, the existence of the test file will be validated during the initialization of the fixtures.
 
 **NOTE**: Never remove `_AUTO_GENERATED_FOR_` property from the fixture files otherwise you won't be protected against renames/moves.
+
+# Property matching
+
+In real world projects often happen that some properties in your beans are generated automatically. In the following example our Person object is an entity that will be written to the database. 
+```java
+@Entity
+@Table
+public class Person implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator")
+    private Long id;
+	
+    private String name;
+	
+	private LocalDateTime createdAt = LocalDateTime.now();
+	
+}
+```
+When we write tests we usually need to do some tricks to test the properties like `id` and `createdAt`. Id property is generated automatically but sometimes it's up to the database which will be your next one. Similarly the `createdAt` property will change with every instance.
+
+In terms of `Json-fixtures` the situation is more complicated, beacuse you cannot make too many tricks in a json file. Your best thing to do is to skip these properties and let exact matching go. Doesn't sound good, right?
+
+This is where property matching comes into play. In the assertion methods (`FixtureAssert.matches*` and `FixtureAssert.toMatchSnapshot*`) you can define `Matchers` to your properties. When it happens, than we skip these properties from the traditional assertion and try to match the actual values with the provided Matcher.
+
+You can use the static helpers of the `PropertyMatchers` class to set your custom assertions. `overriddenMatchers` method accepts unlimited property and matcher pairs. These two simple matchers solves the problem which was described above 
+
+```java
+    @Test
+    public void myTest() throws Exception {
+        Person person = storage.loadAll().get(0);
+        FixtureAssert.assertThat(person).matchesExactly(PropertyMatchers.overriddenMatchers("id", any(Integer.class), "createdAt", any(LocalDateTime.class)), "my-fixture-result");
+    }
+```
+
+This is a really silly example, because it accepts any `Integer` and `LocalDateTime` values. This doesn't really test anything, but keep in mind that you can write any `Matcher` class which extends from `org.hamcrest.Matcher`. Beside this, there are plenty of built in `Matchers` that you can use (Check the static helpers of `org.hamcrest.Matchers` class). Most of the time these are covering the regular use cases. You can see more examples in [PropertyMatcherTest](https://github.com/corballis/json-fixtures/blob/snapshot-matching/json-fixtures-lib/src/test/java/ie/corballis/fixtures/assertion/PropertyMatchersTest.java).
+
+**NOTE**: Currently you can write custom matchers to simple properties like Strings, Integers...etc. Matching of objects and lists are **not supported** yet. If you need anything like this, feel free to contribute. 
+
+### Nested property matching
+
+We support property matching in nested objects too. You only need to describe the path of the property (separated by dots) to be handled differently:
+```java
+@Test
+public void myTest() throws IOException {
+    FixtureAssert.assertThat(person)
+                 .matchesExactlyWithStrictOrder(overriddenMatchers("cars.model", equalTo("BMW"), "pet.name.firstName", equalTo("Fiffy")),
+                                                "expectedPerson");
+}
+```
+**Note**: When you use nested properties inside an object of a list (`cars.model`) we assume that you want that matcher to apply every instance of that list. It's not supported to specify mathers for the list elements one by one.
