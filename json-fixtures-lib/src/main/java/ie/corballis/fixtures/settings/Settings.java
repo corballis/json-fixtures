@@ -81,7 +81,7 @@ public class Settings {
             return this;
         }
 
-        private static ObjectMapper defaultObjectMapper() {
+        public static ObjectMapper defaultObjectMapper() {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
             objectMapper.setDefaultPrettyPrinter(new JsonFixturesPrettyPrinter());

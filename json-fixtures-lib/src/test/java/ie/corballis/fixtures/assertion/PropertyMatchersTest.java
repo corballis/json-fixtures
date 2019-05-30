@@ -1,12 +1,14 @@
 package ie.corballis.fixtures.assertion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import ie.corballis.fixtures.annotation.Fixture;
 import ie.corballis.fixtures.annotation.FixtureAnnotations;
 import ie.corballis.fixtures.references.Entity;
 import ie.corballis.fixtures.references.Owner;
 import ie.corballis.fixtures.references.Person;
+import ie.corballis.fixtures.settings.Settings;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.core.IsAnything;
@@ -22,7 +24,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static ie.corballis.fixtures.assertion.PropertyMatchers.overriddenMatchers;
-import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -39,8 +40,9 @@ public class PropertyMatchersTest {
 
     @Before
     public void setUp() throws Exception {
-        FixtureAnnotations.initFixtures(this);
-        settings().getObjectMapper().registerModule(new JavaTimeModule());
+        ObjectMapper objectMapper = Settings.Builder.defaultObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        FixtureAnnotations.initFixtures(this, new Settings.Builder().setObjectMapper(objectMapper));
     }
 
     @Test

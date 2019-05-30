@@ -342,10 +342,28 @@ a = 5, b = 6
 ```
 So thanks to this setting, also the inherited fields can be set properly from the fixtures.
 
-**However**, you might want to use your **own** object mapper with your pre-set custom configuration instead. -- For this, perform the following static method call:
+## Configure `Json-fixtures`
+
+Every library works fine until you try it with the "Hell World" example. When your project is getting more and more complicated you often need to customize them. The same applies to `Json-fixtures`. 
+That's why we introduced our `Settings.Builder` class. During the initialization, you can customize the following settings:
+
+1. ObjectMapper: This library uses [Jackson](https://github.com/FasterXML/jackson) for json processing. If you need to customize how serialization or deserialization work, you can pass your own `ObjectMapper` instance, pimped-up with all the stuff you need to your project.
+In the example below we extended our default ObjectMapper with the standard Java8+ time de/serialization:
 ```java
-ObjectMapperProvider.setObjectMapper(ownMapper);
+@Before
+public void setUp() throws Exception {
+    ObjectMapper objectMapper = Settings.Builder.defaultObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule());
+    FixtureAnnotations.initFixtures(this, new Settings.Builder().setObjectMapper(objectMapper));
+}
 ```
+2. Snapshot `FileNamingStrategy`: You can read about [snapshots](#snapshot-matching) below. If the default naming strategy is not eligible for you, you can add your custom class any time. By default [TestClassFileNamingStrategy](https://github.com/corballis/json-fixtures/blob/snapshot-matching/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/write/TestClassFileNamingStrategy.java) is applied.
+
+3. Generator `FileNamingStrategy`: Same as above, but here you can configure the naming strategy for the generator. If the default naming strategy is not eligible for you, you can add your custom class any time. By default [TestClassFileNamingStrategy](https://github.com/corballis/json-fixtures/blob/snapshot-matching/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/write/TestClassFileNamingStrategy.java) is applied.
+
+4. `SnapshotFixtureWriter`: If you want to change the way how the fixtures are written to the files, you can customize it by writing your custom `SnapshotFixtureWriter`. It can be useful when you are not using conventional [java project structures](#generate-snapshots-to-somewhere-else).
+
+5. `FixtureScanner`: By default `Json-fixtures` scans your classpath and looks for `.fixture.json` files. If you need more you can write your custom scanner any time. Default class: [ClassPathFixtureScanner](https://github.com/corballis/json-fixtures/blob/snapshot-matching/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/ClassPathFixtureScanner.java)
 
 ## Generating JSON fixture files from Java bean classes
 The second main feature of the library is the inverse of the first one: it helps you generate JSON fixtures based on the skeleton of a bean.
