@@ -509,17 +509,17 @@ public class TestClass {
 
 ## Snapshot matching
 
-Snapshot matching is inspired by [Jest Framework](https://jestjs.io). Althought Jest is Frontend testing framework, the concept of snapshot matching can be useful in Java tests too.
+Snapshot matching is inspired by [Jest Framework](https://jestjs.io). Althought Jest is a frontend testing framework, the concept of snapshot matching can be useful in Java tests too.
 When you would like to test a bean, you need to create the expected json and save it to a fixture file as it was described above. If your are such a lazy guy/girl as we are, you will probably convert the original object to json and then copy it to the proper file. 
 We have good news! Snapshot matching saves this time for you. 
-A snapshot is the actual state of your bean which will be written to a file for the first time. When we detect that a snapshot is present, we compare that with the the actual value.
+A snapshot is the actual state of your bean, which will be written to a file for the first time. When we detect that a snapshot is present, we compare that with the actual value.
 
 ### How snapshots work
-To try it out quickly and use `FixtureAssert.assertThat(bean).toMatchSnapshot()` method which will generate the initial json value for the first usage. 
+To try it out quickly, use the `FixtureAssert.assertThat(bean).toMatchSnapshot()` method, which will generate the initial json value at the first usage. 
 
-By default all snapshots are written to a `.fixtures.json` ending file next to your test class with the same name (`MyTests.java -> MyTests.fixtures.json`). If you need different file naming strategy or you want to generate the file elsewhere jump to the [Generate snapshots to somewhere else](#generate-snapshots-to-somewhere-else) or [Change the name of the snapshot file](#change-the-name-of-the-snapshot-file) sections.
+By default all snapshots are written to a `.fixtures.json` ending file next to your test class with the same name (`MyTests.java -> MyTests.fixtures.json`). If you need different file naming strategy or you want to generate the file elsewhere, jump to the [Generate snapshots to somewhere else](#generate-snapshots-to-somewhere-else) or [Change the name of the snapshot file](#change-the-name-of-the-snapshot-file) sections.
 
-Conventionally the generated fixtures will have the same names as the running testcase. It's possible to call `toMatchSnapshot()` multiple times in a test. According to the default naming convention every call will be prefixed by the index of the execution.
+Conventionally the generated fixtures will have the same names as the running testcase. It's possible to call `toMatchSnapshot()` multiple times in a test. According to the default naming convention every call will be postfixed with the index of the execution.
 
 Example:
 
@@ -545,9 +545,9 @@ When you run this test for the first time, the contents of the `TestClass.fixtur
     "test2-2": {...}
 }
 ```
-After the initial execution `toMatchSnapshot` methods will work like the other matchers. They look up the fixtures based on the previous conventions and match the fixures with the actual values.
+After the initial execution, `toMatchSnapshot` methods will work like the other matchers. They look up the fixtures based on the previous conventions and match the fixures with the actual values.
 
-Similarly as you could have seen in the assertions section you can use `toMatchSnapshot` with different level of strictness:
+Similarly as you could have seen in the assertions section, you can use `toMatchSnapshot` with different level of strictness:
 
  1. `toMatchSnapshot()`:
 allows both any array ordering and extra unexpected fields;
@@ -573,7 +573,7 @@ By default snapshot files are generated next to the test class.
         ├───java
         	└───packages
 ```
-If you have different structure, you can either write custom `SnapshotFixtureWriter` or you can set an absolute path to the folder where you want your fixture files to be generated to. You can configure a custom path by using our `SettingsBuilder`:
+If you have different structure, you can either write a custom `SnapshotFixtureWriter` or you can set an absolute path to the folder where you want your fixture files to be generated to. You can configure a custom path by using our `SettingsBuilder`:
 
 ```java
     @Before
@@ -584,7 +584,7 @@ If you have different structure, you can either write custom `SnapshotFixtureWri
 
 ### Change the name of the snapshot file
 
-By default all snapshots are written to a `.fixtures.json` ending with the same name as your test class. If this behavior is not suitable for your needs, you can configure a custom `FileNamingStrategy`:
+By default all snapshots are written to a `.fixtures.json` file starting with the same name as your test class. If this behavior is not suitable for your needs, you can configure a custom `FileNamingStrategy`:
 
 ```java
     @Before
@@ -595,13 +595,13 @@ By default all snapshots are written to a `.fixtures.json` ending with the same 
 
 ### Regenerate snapshots
 
-There are situations when you need to refator bigger chunks of your codebase. When it happens it's often easier to regenerate some fixtures rather than patch it until they are up-to-date. 
-For these cases we introduced `regenerate` flag  in `toMatchSnapshot*` methods. 
-**NOTE:** When this flag is turned on the fixures will be regenerated by every test execution and the assertions are not being executed. **Make sure that you don't commit any test file to the source control where the regeneration is turned on.**
+There are situations when you need to refactor bigger chunks of your codebase. When it happens, it's often easier to regenerate some fixtures rather than patching them until they are up-to-date. 
+For these cases we introduced the `regenerate` flag  in `toMatchSnapshot*` methods. 
+**NOTE:** When this flag is turned on, the fixures are regenerated at every test execution and the assertions are not executed. **Make sure that you don't commit any test files to source control where the regeneration is turned on.**
 
 ### Protection against renames/moves
 
-Sometimes you need to move your test classes to other packages or rename them to something else. `toMatchSnapshot*` methods are looking for the snapshot files in the same place where it was generated. 
-It leads to problems when you forget to move/rename the fixture file along with your test class. In order to prevent these situations, every snapshot fixture file contains a special property called: `_AUTO_GENERATED_FOR_`. This property stores the fully qualified class name of test which was generated for. Based on this property the existence of the test file will be validated during the initialization of the fixtures.
+Sometimes you need to move your test classes to other packages or rename them to something else. `toMatchSnapshot*` methods are looking for the snapshot files in the same place where they were generated. 
+It leads to problems when you forget to move/rename the fixture file along with your test class. In order to prevent these situations, every snapshot fixture file contains a special property called: `_AUTO_GENERATED_FOR_`. This property stores the fully qualified class name of test which it was generated for. Based on this property, the existence of the test file will be validated during the initialization of the fixtures.
 
 **NOTE**: Never remove `_AUTO_GENERATED_FOR_` property from the fixture files otherwise you won't be protected against renames/moves.
