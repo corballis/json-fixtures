@@ -626,7 +626,7 @@ It leads to problems when you forget to move/rename the fixture file along with 
 
 # Property matching
 
-In real world projects it's often happen that some properties in your beans are generated automatically. In the following example our Person object is an entity that will be written to the database. 
+In real world projects it often happens that some properties in your beans are generated automatically. In the following example our Person object is an entity that will be written to the database. 
 ```java
 @Entity
 @Table
@@ -643,11 +643,11 @@ public class Person implements Serializable {
 	
 }
 ```
-When we write tests we usually need to do some tricks to test the properties like `id` and `createdAt`. Id property is generated automatically but sometimes it's up to the database which will be your next one. Similarly the `createdAt` property will change with every instance.
+When we write tests, we usually need to do some tricks to test the properties like `id` and `createdAt`. Id property is generated automatically and sometimes you don't have control over the generation. It is the database which is responsible for assigning the IDs. Similarly the `createdAt` property will change with every instance.
 
 In terms of `Json-fixtures` the situation is more complicated, beacuse you cannot make too many tricks in a json file. Your best thing to do is to skip these properties and let exact matching go. Doesn't sound good, right?
 
-This is where property matching comes into play. In the assertion methods (`FixtureAssert.matches*` and `FixtureAssert.toMatchSnapshot*`) you can define `Matchers` to your properties. When it happens, than we skip these properties from the traditional assertion and try to match the actual values with the provided Matcher.
+This is where property matching comes into play. In the assertion methods (`FixtureAssert.matches*` and `FixtureAssert.toMatchSnapshot*`) you can define `Matchers` for your properties. When you do that, than we skip these properties from the regular JSON assertion and try to match the actual values with the provided Matchers.
 
 You can use the static helpers of the `PropertyMatchers` class to set your custom assertions. `overriddenMatchers` method accepts unlimited property and matcher pairs. These two simple matchers solves the problem which was described above 
 
@@ -659,9 +659,9 @@ You can use the static helpers of the `PropertyMatchers` class to set your custo
     }
 ```
 
-This is a really silly example, because it accepts any `Integer` and `LocalDateTime` values. This doesn't really test anything, but keep in mind that you can write any `Matcher` class which extends from `org.hamcrest.Matcher`. Beside this, there are plenty of built in `Matchers` that you can use (Check the static helpers of `org.hamcrest.Matchers` class). Most of the time these are covering the regular use cases. You can see more examples in [PropertyMatcherTest](https://github.com/corballis/json-fixtures/blob/snapshot-matching/json-fixtures-lib/src/test/java/ie/corballis/fixtures/assertion/PropertyMatchersTest.java).
+This is a really silly example, because it accepts any `Integer` and `LocalDateTime` values. This doesn't really test anything, but keep in mind that you can write any `Matcher` class which extends from `org.hamcrest.Matcher`. Beside this, there are plenty of built in `Matchers` that you can use (Check the static helpers of `org.hamcrest.Matchers` class). Most of the time these will cover the regular use cases. You can see more examples in [PropertyMatcherTest](https://github.com/corballis/json-fixtures/blob/snapshot-matching/json-fixtures-lib/src/test/java/ie/corballis/fixtures/assertion/PropertyMatchersTest.java).
 
-**NOTE**: Currently you can write custom matchers to simple properties like Strings, Integers...etc. Matching of objects and lists are **not supported** yet. If you need anything like this, feel free to contribute. 
+**NOTE**: Currently you can write custom matchers for simple properties like Strings, Integers...etc. Matching of objects and lists are **not supported** yet. If you need anything like this, feel free to contribute. 
 
 ### Nested property matching
 
