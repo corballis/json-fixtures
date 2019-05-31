@@ -1,4 +1,12 @@
-expected:<...operty" : [ "element[1", "element2", "element3" ]]
-}'> but was:<...operty" : [ "element[2", "element1", "element3" ],
-  "nested" : null]
+expected:<...rty": [
+    "element[1",
+    "element2",
+    "element3"
+  ]]
+}'> but was:<...rty": [
+    "element[2",
+    "element1",
+    "element3"
+  ],
+  "nested": null]
 }'>

@@ -20,6 +20,7 @@ import java.util.*;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
+import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 
 public class BeanFactory {
 
@@ -33,15 +34,7 @@ public class BeanFactory {
     private Cache<String, JsonNode> fixtures = CacheBuilder.newBuilder().build();
 
     public BeanFactory() {
-        this((FixtureScanner) null);
-    }
-
-    public BeanFactory(FixtureScanner scanner) {
-        this(new ObjectMapper(), scanner);
-    }
-
-    public BeanFactory(ObjectMapper objectMapper) {
-        this(objectMapper, null);
+        this(settings().getObjectMapper(), settings().getFixtureScanner());
     }
 
     public BeanFactory(ObjectMapper objectMapper, FixtureScanner scanner) {
@@ -51,12 +44,20 @@ public class BeanFactory {
         this.referenceResolver = new ReferenceResolver(objectMapper, this);
     }
 
-    public void init() throws IOException {
-        if (scanner != null) {
-            List<Resource> resources = scanner.collectResources();
-            for (Resource resource : resources) {
-                registerAll(reader.read(resource));
+    public BeanFactory(ObjectMapper objectMapper) {
+        this(objectMapper, null);
+    }
+
+    public void init() {
+        try {
+            if (scanner != null) {
+                List<Resource> resources = scanner.collectResources();
+                for (Resource resource : resources) {
+                    registerAll(reader.read(resource));
+                }
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -100,9 +101,14 @@ public class BeanFactory {
             return "{}";
         }
         JsonNode result = mergeFixtures(fixtureNames.toArray(new String[fixtureNames.size()]));
-        return pretty ? objectMapper.writer().withDefaultPrettyPrinter().writeValueAsString(result) : result.toString();
+        return createAsString(pretty, result);
     }
 
+    public String createAsString(boolean pretty, JsonNode jsonNode) throws JsonProcessingException {
+        return pretty ?
+               objectMapper.writer().withDefaultPrettyPrinter().writeValueAsString(jsonNode) :
+               jsonNode.toString();
+    }
 
     public <T> T create(Class<T> type, String... fixtureNames) {
         return create(DEFAULT_REFERENCE_PREFIX, type, fixtureNames);
@@ -125,11 +131,12 @@ public class BeanFactory {
     }
 
     private String getFixtureName(String[] fixtureNames) {
-        return fixtureNames.length == 1 ? fixtureNames[0]: "[MERGED:" + Joiner.on(",").join(fixtureNames) +"]";
+        return fixtureNames.length == 1 ? fixtureNames[0] : "[MERGED:" + Joiner.on(",").join(fixtureNames) + "]";
     }
 
     private JsonNode getFixtureAsJsonNodeOrFail(String fixtureName) {
-        return getFixtureAsJsonNode(fixtureName).orElseThrow(() -> new NullPointerException("'" + fixtureName + "' is not a valid fixture name!"));
+        return getFixtureAsJsonNode(fixtureName).orElseThrow(() -> new NullPointerException(
+            "'" + fixtureName + "' is not a valid fixture name!"));
     }
 
     public Optional<JsonNode> getFixtureAsJsonNode(String fixtureName) {

@@ -1,12 +1,19 @@
 package ie.corballis.fixtures.annotation;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import ie.corballis.fixtures.core.MyBean;
+import ie.corballis.fixtures.io.write.DefaultSnapshotWriter;
+import ie.corballis.fixtures.io.write.FileNamingStrategy;
+import ie.corballis.fixtures.io.write.StaticPathDefaultSnapshotWriter;
+import ie.corballis.fixtures.settings.Settings;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -63,13 +70,6 @@ public class FixtureAnnotationsTest {
         checkList(Arrays.asList(beanArray));
     }
 
-    @Test
-    public void defaultFixtureNames() throws Exception {
-        FixtureAnnotations.initFixtures(this);
-        checkFixture1(fixture1);
-        checkList(fixture6);
-    }
-
     private void checkFixture1(MyBean bean) {
         assertThat(bean).isNotNull();
         assertThat(bean.getStringProperty()).isEqualTo("property");
@@ -93,5 +93,55 @@ public class FixtureAnnotationsTest {
         assertThat(list.get(1).getIntProperty()).isEqualTo(2);
         assertThat(list.get(2).getStringProperty()).isEqualTo("property3");
         assertThat(list.get(2).getIntProperty()).isEqualTo(3);
+    }
+
+    @Test
+    public void defaultFixtureNames() throws Exception {
+        FixtureAnnotations.initFixtures(this);
+        checkFixture1(fixture1);
+        checkList(fixture6);
+    }
+
+    @Test
+    public void shouldUseDifferentSettingsInEachThread() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
+
+        FileNamingStrategy fileNamingStrategy = (folder, fileNamePrefix, fixtureName) -> "abc.test";
+
+        Settings.Builder settings = new Settings.Builder().setObjectMapper(objectMapper)
+                                                          .setDefaultSnapshotWriter()
+                                                          .setGeneratorFileNamingStrategy(fileNamingStrategy)
+                                                          .setSnapshotFileNamingStrategy(fileNamingStrategy);
+
+        FixtureAnnotations.initFixtures(this, settings);
+
+        Thread t2 = new Thread() {
+            @Override
+            public void run() {
+                FileNamingStrategy fileNamingStrategy = (folder, fileNamePrefix, fixtureName) -> "cba.test";
+                Settings.Builder settings = new Settings.Builder().setDefaultObjectMapper()
+                                                                  .setGeneratorFileNamingStrategy(fileNamingStrategy)
+                                                                  .setSnapshotFolderPath("a/b/c");
+
+                try {
+                    FixtureAnnotations.initFixtures(this, settings);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+
+                assertThat(settings().getObjectMapper()).isNotEqualTo(objectMapper);
+                assertThat(settings().getGeneratorFileNamingStrategy()).isEqualTo(fileNamingStrategy);
+                assertThat(settings().getSnapshotFileNamingStrategy()).isEqualTo(fileNamingStrategy);
+                assertThat(settings().getSnapshotFixtureWriter()).isInstanceOf(StaticPathDefaultSnapshotWriter.class);
+            }
+        };
+        t2.start();
+        t2.join();
+
+        assertThat(settings().getObjectMapper()).isEqualTo(objectMapper);
+        assertThat(settings().getGeneratorFileNamingStrategy()).isEqualTo(fileNamingStrategy);
+        assertThat(settings().getSnapshotFileNamingStrategy()).isEqualTo(fileNamingStrategy);
+        assertThat(settings().getSnapshotFixtureWriter()).isInstanceOf(DefaultSnapshotWriter.class);
     }
 }

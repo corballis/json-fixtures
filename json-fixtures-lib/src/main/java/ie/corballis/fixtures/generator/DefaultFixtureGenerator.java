@@ -2,7 +2,6 @@ package ie.corballis.fixtures.generator;
 
 import com.google.common.base.Defaults;
 import com.google.common.primitives.Primitives;
-import ie.corballis.fixtures.core.ObjectMapperProvider;
 import ie.corballis.fixtures.util.FieldReader;
 import ie.corballis.fixtures.util.FieldSetter;
 
@@ -13,6 +12,7 @@ import java.util.Date;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 
 public class DefaultFixtureGenerator implements FixtureGenerator {
     @Override
@@ -71,6 +71,6 @@ public class DefaultFixtureGenerator implements FixtureGenerator {
     }
 
     private Map<String, Object> generateMap(Object instance) {
-        return ObjectMapperProvider.getObjectMapper().convertValue(instance, Map.class);
+        return settings().getObjectMapper().convertValue(instance, Map.class);
     }
 }

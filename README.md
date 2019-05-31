@@ -248,9 +248,9 @@ that connects to the changed data.
 
 For more examples, see the tests in the library's test package `references`,
 together with the fixture files they rely on; especially
-[ReferencesTest](https://github.com/corballis/json-fixtures/blob/newFeatureReferences/json-fixtures-lib/src/test/java/ie/corballis/fixtures/references/ReferencesTest.java)
+[ReferencesTest](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/test/java/ie/corballis/fixtures/references/ReferencesTest.java)
 and
-[references.fixtures.json](https://github.com/corballis/json-fixtures/blob/newFeatureReferences/json-fixtures-lib/src/test/resources/references.fixtures.json).
+[references.fixtures.json](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/test/resources/references.fixtures.json).
 
 Circular dependencies between fixture references are NOT permitted in any depth. It will be detected by the library.
 
@@ -342,10 +342,28 @@ a = 5, b = 6
 ```
 So thanks to this setting, also the inherited fields can be set properly from the fixtures.
 
-**However**, you might want to use your **own** object mapper with your pre-set custom configuration instead. -- For this, perform the following static method call:
+## Configure `Json-fixtures`
+
+Every library works fine if you try it with the "Hello World" example. When your project is getting more and more complicated, you often need to customize them. The same applies to `Json-fixtures`. 
+That's why we introduced our `Settings.Builder` class. During the initialization, you can customize the following settings:
+
+1. ObjectMapper: This library uses [Jackson](https://github.com/FasterXML/jackson) for json processing. If you need to customize how serialization or deserialization work, you can pass your own `ObjectMapper` instance, pimped-up with all the stuff you need in your project.
+In the example below we extended our default ObjectMapper with the standard Java8+ time de/serialization:
 ```java
-ObjectMapperProvider.setObjectMapper(ownMapper);
+@Before
+public void setUp() throws Exception {
+    ObjectMapper objectMapper = Settings.Builder.defaultObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule());
+    FixtureAnnotations.initFixtures(this, new Settings.Builder().setObjectMapper(objectMapper));
+}
 ```
+2. Snapshot `FileNamingStrategy`: You can read about [snapshots](#snapshot-matching) below. If the default naming strategy does not work for you, you can add your custom class any time. By default [TestClassFileNamingStrategy](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/write/TestClassFileNamingStrategy.java) is applied.
+
+3. Generator `FileNamingStrategy`: Same as above, but here you can configure the naming strategy for the generator. If the default naming strategy does not work for you, you can add your custom class any time. By default [TestClassFileNamingStrategy](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/write/TestClassFileNamingStrategy.java) is applied.
+
+4. `SnapshotFixtureWriter`: If you want to change the way how the fixtures are written to the files, you can customize it by writing your custom `SnapshotFixtureWriter`. It can be useful when you are not using conventional [java project structures](#generate-snapshots-to-somewhere-else).
+
+5. `FixtureScanner`: By default `Json-fixtures` scans your classpath and looks for `.fixture.json` files. If you need more, you can write your custom scanner any time. Default class: [ClassPathFixtureScanner](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/ClassPathFixtureScanner.java)
 
 ## Generating JSON fixture files from Java bean classes
 The second main feature of the library is the inverse of the first one: it helps you generate JSON fixtures based on the skeleton of a bean.
@@ -506,3 +524,154 @@ public class TestClass {
 	}
 }
 ```
+
+## Snapshot matching
+
+Snapshot matching is inspired by [Jest Framework](https://jestjs.io). Althought Jest is a frontend testing framework, the concept of snapshot matching can be useful in Java tests too.
+When you would like to test a bean, you need to create the expected json and save it to a fixture file as it was described above. If your are such a lazy guy/girl as we are, you will probably convert the original object to json and then copy it to the proper file. 
+We have good news! Snapshot matching saves this time for you. 
+A snapshot is the actual state of your bean, which will be written to a file for the first time. When we detect that a snapshot is present, we compare that with the actual value.
+
+### How snapshots work
+To try it out quickly, use the `FixtureAssert.assertThat(bean).toMatchSnapshot()` method, which will generate the initial json value at the first usage. 
+
+By default all snapshots are written to a `.fixtures.json` ending file next to your test class with the same name (`MyTests.java -> MyTests.fixtures.json`). If you need different file naming strategy or you want to generate the file elsewhere, jump to the [Generate snapshots to somewhere else](#generate-snapshots-to-somewhere-else) or [Change the name of the snapshot file](#change-the-name-of-the-snapshot-file) sections.
+
+Conventionally the generated fixtures will have the same names as the running testcase. It's possible to call `toMatchSnapshot()` multiple times in a test. According to the default naming convention every call will be postfixed with the index of the execution.
+
+Example:
+
+```java
+import static ie.corballis.fixtures.assertion.FixtureAssert.assertThat;
+(...)
+public class TestClass {
+	@Test
+	public void test2() throws Exception {
+		List<String> actual = myMethodResult();
+		assertThat(actual).toMatchSnapshot();
+		
+		Bean actual2 = myMethodResult2();
+		assertThat(actual2).toMatchSnapshot();
+	}
+}
+```
+When you run this test for the first time, the contents of the `TestClass.fixtures.json` will be something similar:
+
+```javascript
+{
+    "test2-1": [...],
+    "test2-2": {...}
+}
+```
+After the initial execution, `toMatchSnapshot` methods will work like the other matchers. They look up the fixtures based on the previous conventions and match the fixures with the actual values.
+
+Similarly as you could have seen in the assertions section, you can use `toMatchSnapshot` with different level of strictness:
+
+ 1. `toMatchSnapshot()`:
+allows both any array ordering and extra unexpected fields;
+ 2. `toMatchSnapshotWithStrictOrder()`:
+allows only strict array ordering, but allows extra unexpected fields;
+ 3. `toMatchSnapshotExactly()`:
+allows any array ordering, but no extra unexpected fields;
+ 4. `toMatchSnapshotExactlyWithStrictOrder()`:
+allows only strict array ordering and no extra unexpected fields.
+
+### Generate snapshots to somewhere else
+
+By default snapshot files are generated next to the test class. 
+**NOTE:** The `DefaultSnapshotWriter` assumes that you use conventional project structure like this:
+
+```
+├───src
+    ├───main
+    │   └───java
+    │       └───packages
+    │
+    └───test
+        ├───java
+        	└───packages
+```
+If you have different structure, you can either write a custom `SnapshotFixtureWriter` or you can set an absolute path to the folder where you want your fixture files to be generated to. You can configure a custom path by using our `SettingsBuilder`:
+
+```java
+    @Before
+    public void setUp() throws Exception {
+        FixtureAnnotations.initFixtures(this, new Settings.Builder().setSnapshotFolderPath("/absolute/path/to/my/folder"));
+    }
+```
+
+### Change the name of the snapshot file
+
+By default all snapshots are written to a `.fixtures.json` file starting with the same name as your test class. If this behavior is not suitable for your needs, you can configure a custom `FileNamingStrategy`:
+
+```java
+    @Before
+    public void setUp() throws Exception {
+        FixtureAnnotations.initFixtures(this, new Settings.Builder().setSnapshotFileNamingStrategy(...));
+    }
+```
+
+### Regenerate snapshots
+
+There are situations when you need to refactor bigger chunks of your codebase. When it happens, it's often easier to regenerate some fixtures rather than patching them until they are up-to-date. 
+For these cases we introduced the `regenerate` flag  in `toMatchSnapshot*` methods. 
+**NOTE:** When this flag is turned on, the fixures are regenerated at every test execution and the assertions are not executed. **Make sure that you don't commit any test files to source control where the regeneration is turned on.**
+
+### Protection against renames/moves
+
+Sometimes you need to move your test classes to other packages or rename them to something else. `toMatchSnapshot*` methods are looking for the snapshot files in the same place where they were generated. 
+It leads to problems when you forget to move/rename the fixture file along with your test class. In order to prevent these situations, every snapshot fixture file contains a special property called: `_AUTO_GENERATED_FOR_`. This property stores the fully qualified class name of test which it was generated for. Based on this property, the existence of the test file will be validated during the initialization of the fixtures.
+
+**NOTE**: Never remove `_AUTO_GENERATED_FOR_` property from the fixture files otherwise you won't be protected against renames/moves.
+
+# Property matching
+
+In real world projects it often happens that some properties in your beans are generated automatically. In the following example our Person object is an entity that will be written to the database. 
+```java
+@Entity
+@Table
+public class Person implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator")
+    private Long id;
+	
+    private String name;
+	
+	private LocalDateTime createdAt = LocalDateTime.now();
+	
+}
+```
+When we write tests, we usually need to do some tricks to test the properties like `id` and `createdAt`. Id property is generated automatically and sometimes you don't have control over the generation. It is the database which is responsible for assigning the IDs. Similarly the `createdAt` property will change with every instance.
+
+In terms of `Json-fixtures` the situation is more complicated, beacuse you cannot make too many tricks in a json file. Your best thing to do is to skip these properties and let exact matching go. Doesn't sound good, right?
+
+This is where property matching comes into play. In the assertion methods (`FixtureAssert.matches*` and `FixtureAssert.toMatchSnapshot*`) you can define `Matchers` for your properties. When you do that, than we skip these properties from the regular JSON assertion and try to match the actual values with the provided Matchers.
+
+You can use the static helpers of the `PropertyMatchers` class to set your custom assertions. `overriddenMatchers` method accepts unlimited property and matcher pairs. These two simple matchers solves the problem which was described above 
+
+```java
+    @Test
+    public void myTest() throws Exception {
+        Person person = storage.loadAll().get(0);
+        FixtureAssert.assertThat(person).matchesExactly(PropertyMatchers.overriddenMatchers("id", any(Integer.class), "createdAt", any(LocalDateTime.class)), "my-fixture-result");
+    }
+```
+
+This is a really silly example, because it accepts any `Integer` and `LocalDateTime` values. This doesn't really test anything, but keep in mind that you can write any `Matcher` class which extends from `org.hamcrest.Matcher`. Beside this, there are plenty of built in `Matchers` that you can use (Check the static helpers of `org.hamcrest.Matchers` class). Most of the time these will cover the regular use cases. You can see more examples in [PropertyMatcherTest](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/test/java/ie/corballis/fixtures/assertion/PropertyMatchersTest.java).
+
+**NOTE**: Currently you can write custom matchers for simple properties like Strings, Integers...etc. Matching of objects and lists are **not supported** yet. If you need anything like this, feel free to contribute. 
+
+### Nested property matching
+
+We support property matching in nested objects too. You only need to describe the path of the property (separated by dots) to be handled differently:
+```java
+@Test
+public void myTest() throws IOException {
+    FixtureAssert.assertThat(person)
+                 .matchesExactlyWithStrictOrder(overriddenMatchers("cars.model", equalTo("BMW"), "pet.name.firstName", equalTo("Fiffy")),
+                                                "expectedPerson");
+}
+```
+**Note**: When you use nested properties inside an object of a list (`cars.model`) we assume that you want that matcher to be applied to every instance of that list. It's not supported to specify mathers for the list elements one by one.

@@ -5,8 +5,6 @@ import ie.corballis.fixtures.annotation.Fixture;
 import ie.corballis.fixtures.annotation.FixtureAnnotations;
 import ie.corballis.fixtures.assertion.FixtureAssert;
 import ie.corballis.fixtures.core.BeanFactory;
-import ie.corballis.fixtures.core.ObjectMapperProvider;
-import ie.corballis.fixtures.io.ClassPathFixtureScanner;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,8 +45,7 @@ public class ReferencesTest {
 
     @Test
     public void shouldFailWhenUnknownReferenceFound() throws IOException {
-        BeanFactory factory =
-            new BeanFactory(ObjectMapperProvider.getObjectMapper(), new ClassPathFixtureScanner());
+        BeanFactory factory = new BeanFactory();
         factory.init();
 
         expectedException.expect(IllegalArgumentException.class);
@@ -63,8 +60,7 @@ public class ReferencesTest {
 
     @Test
     public void primitivesForBaseObjectAreNotAllowed() throws IOException {
-        BeanFactory factory =
-            new BeanFactory(ObjectMapperProvider.getObjectMapper(), new ClassPathFixtureScanner());
+        BeanFactory factory = new BeanFactory();
         factory.init();
 
         expectedException.expect(IllegalArgumentException.class);

@@ -1,0 +1,163 @@
+{
+  "_AUTO_GENERATED_FOR_": "ie.corballis.fixtures.assertion.PropertyMatchersTest",
+  "ownerForMatchers": {
+    "name": "Owner2",
+    "things": [
+      {
+        "id": 1,
+        "name": "Thing2"
+      },
+      {
+        "id": 2,
+        "name": "Thing3"
+      }
+    ]
+  },
+  "testMap": {
+    "a": "a1",
+    "b": [
+      [
+        {
+          "a": "a2",
+          "c": "c1",
+          "d": "d1"
+        },
+        {
+          "a": "a3",
+          "c": "c2",
+          "d": "d2"
+        }
+      ],
+      [
+        {
+          "a": "a4",
+          "c": "c3",
+          "d": "d4"
+        }
+      ]
+    ],
+    "x": {
+      "a": {
+        "b": 1,
+        "g": 2
+      },
+      "y": [
+        1,
+        2,
+        3
+      ],
+      "f": "g"
+    }
+  },
+  "testMapExpected": {
+    "a": "a1",
+    "b": [
+      [
+        {
+          "a": "xxx",
+          "c": "c1",
+          "d": "d1"
+        },
+        {
+          "a": "yyy",
+          "c": "c2",
+          "d": "d2"
+        }
+      ],
+      [
+        {
+          "a": "zzz",
+          "c": "c3",
+          "d": "d4"
+        }
+      ]
+    ],
+    "x": {
+      "a": {
+        "b": 1,
+        "g": 2
+      },
+      "y": [
+        1,
+        2,
+        3
+      ],
+      "f": "g"
+    }
+  },
+  "toMatchSnapshotShouldNotWriteOverriddenProperties-1": {
+    "dog": {
+      "name": "XXX",
+      "age": 3.23,
+      "breed": "labrador"
+    },
+    "cars": []
+  },
+  "customMatcherShouldBeAccepted-result": {
+    "id": 10
+  },
+  "matchesShouldAcceptMatchers-1": {
+    "age": 20,
+    "dog": {
+      "name": "XXX",
+      "age": 3.23,
+      "breed": "labrador"
+    },
+    "cars": []
+  },
+  "matchesWithStrictOrderShouldAcceptMatchers-result": {
+    "a": "a1",
+    "b": [
+      [
+        {
+          "a": "a2",
+          "c": "c1",
+          "d": "d1"
+        },
+        {
+          "a": "a3",
+          "c": "c2",
+          "d": "d2"
+        }
+      ],
+      [
+        {
+          "a": "a4",
+          "c": "c3",
+          "d": "d4"
+        }
+      ]
+    ]
+  },
+  "toMatchSnapshotShouldAcceptMatchers-1": {
+    "age": 20,
+    "dog": {
+      "breed": "labrador"
+    },
+    "cars": []
+  },
+  "toMatchSnapshotWithStrictOrderShouldAcceptMatchers-1": {
+    "a": "a1",
+    "b": [
+      [
+        {
+          "a": "a2",
+          "c": "c1",
+          "d": "d1"
+        },
+        {
+          "a": "a3",
+          "c": "c2",
+          "d": "d2"
+        }
+      ],
+      [
+        {
+          "a": "a4",
+          "c": "c3",
+          "d": "d4"
+        }
+      ]
+    ]
+  }
+}

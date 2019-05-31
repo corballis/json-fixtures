@@ -1,0 +1,13 @@
+{
+  "_AUTO_GENERATED_FOR_": "ie.corballis.fixtures.snapshot.NoSuchClass",
+  "test-1": {
+    "stringProperty": "property2",
+    "intProperty": 1,
+    "listProperty": [
+      "element1",
+      "element2",
+      "element3"
+    ],
+    "nested": null
+  }
+}

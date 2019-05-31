@@ -3,11 +3,16 @@ package ie.corballis.fixtures.assertion;
 import ie.corballis.fixtures.annotation.Fixture;
 import ie.corballis.fixtures.annotation.FixtureAnnotations;
 import ie.corballis.fixtures.core.MyBean;
+import ie.corballis.fixtures.io.write.SnapshotFixtureWriter;
+import ie.corballis.fixtures.settings.Settings;
 import org.apache.commons.io.FileUtils;
 import org.fest.assertions.api.Assertions;
 import org.junit.Before;
 import org.junit.ComparisonFailure;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +20,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static ie.corballis.fixtures.util.StringUtils.unifyLineEndings;
 
+
+@RunWith(MockitoJUnitRunner.class)
 public class FixtureAssertTest {
 
     @Fixture({"fixture1", "fixture2"})
@@ -28,9 +37,12 @@ public class FixtureAssertTest {
     @Fixture({"fixture1", "fixture2", "fixture3", "fixture5"})
     private MyBean bean3;
 
+    @Mock
+    private SnapshotFixtureWriter snapshotFixtureWriter;
+
     @Before
     public void setUp() throws Exception {
-        FixtureAnnotations.initFixtures(this);
+        FixtureAnnotations.initFixtures(this, new Settings.Builder().setSnapshotFixtureWriter(snapshotFixtureWriter));
     }
 
     @Test
@@ -115,8 +127,7 @@ public class FixtureAssertTest {
     public void matchesExactlyWithStrictOrder_doesNotAllowAnyOrdering() throws URISyntaxException, IOException {
         try {
             bean3.setListProperty(newArrayList("element2", "element1", "element3"));
-            FixtureAssert.assertThat(bean3)
-                         .matchesExactlyWithStrictOrder("fixture1", "fixture2", "fixture3", "fixture5");
+            FixtureAssert.assertThat(bean3).matchesExactlyWithStrictOrder("fixture1", "fixture2", "fixture3", "fixture5");
         } catch (ComparisonFailure e) {
             assertFailureMessage(e, "expectedMessage4");
         }
@@ -133,4 +144,11 @@ public class FixtureAssertTest {
         Assertions.assertThat(unifyLineEndings(e.getMessage())).isEqualTo(unifyLineEndings(expectedMessage));
     }
 
+    @Test
+    public void toMatchSnapshotShouldGenerateNewFileForFirstTime() throws IOException {
+        FixtureAssert.assertThat(bean).toMatchSnapshot();
+        verify(snapshotFixtureWriter, times(1)).write(getClass(),
+                                                      "toMatchSnapshotShouldGenerateNewFileForFirstTime-1",
+                                                      bean);
+    }
 }

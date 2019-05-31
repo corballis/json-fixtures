@@ -4,11 +4,13 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.SimpleType;
 import ie.corballis.fixtures.io.ClassPathResource;
 import ie.corballis.fixtures.io.DefaultFixtureReader;
+import ie.corballis.fixtures.settings.Settings;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
 
+import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class BeanFactoryTest {
@@ -19,7 +21,7 @@ public class BeanFactoryTest {
 
     @Before
     public void setUp() throws Exception {
-        factory = new BeanFactory();
+        factory = new BeanFactory(Settings.Builder.defaultObjectMapper(), settings().getFixtureScanner());
         ClassPathResource resource = new ClassPathResource("test2.fixtures.json");
         DefaultFixtureReader reader = new DefaultFixtureReader();
         factory.registerAll(reader.read(resource));
@@ -36,9 +38,8 @@ public class BeanFactoryTest {
         assertThat(asString).isEqualTo("{\"stringProperty\":\"property\",\"intProperty\":1}");
 
         String asPrettyString = factory.createAsString(true, "fixture1");
-        assertThat(asPrettyString).isEqualTo("{" + NEW_LINE +
-                                             "  \"stringProperty\" : \"property\"," + NEW_LINE +
-                                             "  \"intProperty\" : 1" + NEW_LINE +
+        assertThat(asPrettyString).isEqualTo("{" + NEW_LINE + "  \"stringProperty\": \"property\"," + NEW_LINE +
+                                             "  \"intProperty\": 1" + NEW_LINE +
                                              "}");
     }
 
@@ -58,9 +59,8 @@ public class BeanFactoryTest {
         assertThat(asString).isEqualTo("{\"stringProperty\":\"property2\",\"intProperty\":1}");
 
         String asPrettyString = factory.createAsString(true, "fixture1", "fixture2");
-        assertThat(asPrettyString).isEqualTo("{" + NEW_LINE +
-                                             "  \"stringProperty\" : \"property2\"," + NEW_LINE +
-                                             "  \"intProperty\" : 1" + NEW_LINE +
+        assertThat(asPrettyString).isEqualTo("{" + NEW_LINE + "  \"stringProperty\": \"property2\"," + NEW_LINE +
+                                             "  \"intProperty\": 1" + NEW_LINE +
                                              "}");
     }
 
@@ -87,10 +87,10 @@ public class BeanFactoryTest {
         assertThat(asString).isEqualTo("{\"stringProperty\":\"property\",\"intProperty\":1,\"listProperty\":[\"element1\",\"element2\",\"element3\"]}");
 
         String asPrettyString = factory.createAsString(true, "fixture1", "fixture3");
-        assertThat(asPrettyString).isEqualTo("{" + NEW_LINE +
-                                             "  \"stringProperty\" : \"property\"," + NEW_LINE +
-                                             "  \"intProperty\" : 1," + NEW_LINE +
-                                             "  \"listProperty\" : [ \"element1\", \"element2\", \"element3\" ]" +
+        assertThat(asPrettyString).isEqualTo("{" + NEW_LINE + "  \"stringProperty\": \"property\"," + NEW_LINE +
+                                             "  \"intProperty\": 1," + NEW_LINE + "  \"listProperty\": [" + NEW_LINE +
+                                             "    \"element1\"," + NEW_LINE + "    \"element2\"," + NEW_LINE +
+                                             "    \"element3\"" + NEW_LINE + "  ]" +
                                              NEW_LINE +
                                              "}");
     }
@@ -128,11 +128,11 @@ public class BeanFactoryTest {
         assertThat(asString).isEqualTo("{\"listProperty\":[\"element1\",\"element2\",\"element3\"],\"nested\":{\"prop1\":\"value\"}}");
 
         String asPrettyString = factory.createAsString(true, "fixture3", "fixture5");
-        assertThat(asPrettyString).isEqualTo("{" + NEW_LINE +
-                                             "  \"listProperty\" : [ \"element1\", \"element2\", \"element3\" ]," +
+        assertThat(asPrettyString).isEqualTo("{" + NEW_LINE + "  \"listProperty\": [" + NEW_LINE + "    \"element1\"," +
+                                             NEW_LINE + "    \"element2\"," + NEW_LINE + "    \"element3\"" + NEW_LINE +
+                                             "  ]," +
+                                             NEW_LINE + "  \"nested\": {" + NEW_LINE + "    \"prop1\": \"value\"" +
                                              NEW_LINE +
-                                             "  \"nested\" : {" + NEW_LINE +
-                                             "    \"prop1\" : \"value\"" + NEW_LINE +
                                              "  }" + NEW_LINE +
                                              "}");
     }

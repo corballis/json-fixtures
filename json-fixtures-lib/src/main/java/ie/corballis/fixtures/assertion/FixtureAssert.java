@@ -1,30 +1,36 @@
 package ie.corballis.fixtures.assertion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import ie.corballis.fixtures.core.BeanFactory;
-import ie.corballis.fixtures.core.ObjectMapperProvider;
-import ie.corballis.fixtures.io.ClassPathFixtureScanner;
+import ie.corballis.fixtures.snapshot.SnapshotGenerator;
 import org.fest.assertions.api.AbstractAssert;
 import org.fest.assertions.api.Assertions;
 import org.hamcrest.MatcherAssert;
 import uk.co.datumedge.hamcrest.json.SameJSONAs;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static ie.corballis.fixtures.assertion.MatchingMode.*;
+import static ie.corballis.fixtures.assertion.PropertyMatchers.empty;
+import static ie.corballis.fixtures.settings.SettingsHolder.settings;
+import static ie.corballis.fixtures.util.JsonUtils.visitElements;
 import static ie.corballis.fixtures.util.StringUtils.unifyLineEndings;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
 
     private static final BeanFactory beanFactory;
+    private static final SnapshotGenerator snapshotGenerator;
 
     static {
-        beanFactory = new BeanFactory(ObjectMapperProvider.getObjectMapper(), new ClassPathFixtureScanner());
-        try {
-            beanFactory.init();
-        } catch (IOException e) {
-            throw new ExceptionInInitializerError(e);
-        }
+        beanFactory = new BeanFactory();
+        beanFactory.init();
+        snapshotGenerator = new SnapshotGenerator(beanFactory);
     }
 
     public FixtureAssert(Object actual) {
@@ -35,39 +41,193 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
         return new FixtureAssert(actual);
     }
 
-    private void assertJSON(SameJSONAs<? super String> expected, String... fixtures) throws JsonProcessingException {
-        isNotNull();
-        try {
-            MatcherAssert.assertThat(ObjectMapperProvider.getObjectMapper().writeValueAsString(actual), expected);
-        } catch (AssertionError assertionError) {
-            String actualPrettyString = unifyLineEndings(ObjectMapperProvider.getObjectMapper()
-                                                                             .writer()
-                                                                             .withDefaultPrettyPrinter()
-                                                                             .writeValueAsString(actual));
-            String expectedPrettyString = unifyLineEndings(beanFactory.createAsString(true, fixtures));
-            System.err.print(assertionError.getMessage());
-            Assertions.assertThat(actualPrettyString).isEqualTo(expectedPrettyString);
-        }
+    public FixtureAssert matches(String... fixtures) throws JsonProcessingException {
+        return matches(empty(), fixtures);
     }
 
-    public FixtureAssert matches(String... fixtures) throws JsonProcessingException {
-        assertJSON(sameJSONAs(beanFactory.createAsString(fixtures)).allowingAnyArrayOrdering()
-                                                                   .allowingExtraUnexpectedFields(), fixtures);
+    public FixtureAssert matches(PropertyMatchers matchers, String... fixtures) throws JsonProcessingException {
+        assertJSON(MATCHES, matchers, fixtures);
         return this;
     }
 
+    private void assertJSON(MatchingMode matchingMode, PropertyMatchers matchers, String... fixtures) throws
+                                                                                                      JsonProcessingException {
+        isNotNull();
+        SameJSONAs<String> expected = matchingMode.getJsonMatcher(beanFactory.createAsString(fixtures));
+
+        if (matchers.isEmpty()) {
+            assertThatExpectedMatchesWithActual(expected,
+                                                settings().getObjectMapper().writeValueAsString(actual),
+                                                fixtures);
+        } else {
+            compareWithoutOverriddenProperties(matchingMode, matchers, fixtures);
+            verifyOverriddenPropertiesOnly(matchers);
+        }
+    }
+
+    private void assertThatExpectedMatchesWithActual(SameJSONAs<String> expected,
+                                                     String actualJson,
+                                                     String[] fixtures) throws JsonProcessingException {
+        try {
+            MatcherAssert.assertThat(actualJson, expected);
+        } catch (AssertionError assertionError) {
+            failAndPrettyPrintError(assertionError, fixtures);
+        }
+    }
+
+    private void failAndPrettyPrintError(AssertionError assertionError, String[] fixtures) throws
+                                                                                           JsonProcessingException {
+        String actualPrettyString = unifyLineEndings(settings().getObjectMapper().writerWithDefaultPrettyPrinter()
+                                                               .writeValueAsString(actual));
+        String expectedPrettyString = unifyLineEndings(beanFactory.createAsString(true, fixtures));
+        System.err.print(assertionError.getMessage());
+        Assertions.assertThat(actualPrettyString).isEqualTo(expectedPrettyString);
+    }
+
+    private void compareWithoutOverriddenProperties(MatchingMode matchingMode,
+                                                    PropertyMatchers matchers,
+                                                    String[] fixtures) throws JsonProcessingException {
+        Object clearedActual = removeOverriddenProperties(this.actual, matchers);
+        Object clearedExpected = removeOverriddenProperties(beanFactory.create(Map.class, fixtures), matchers);
+
+        String clearedActualString = settings().getObjectMapper().writeValueAsString(clearedActual);
+        SameJSONAs<String> expectedMatcher =
+            matchingMode.getJsonMatcher(settings().getObjectMapper().writeValueAsString(clearedExpected));
+
+        assertThatExpectedMatchesWithActual(expectedMatcher, clearedActualString, fixtures);
+    }
+
+    private Object removeOverriddenProperties(Object entity, PropertyMatchers matchers) {
+        Set<String> properties = matchers.getProperties();
+
+        if (!matchers.isEmpty()) {
+            Object newObject = settings().getObjectMapper().convertValue(entity, Map.class);
+            for (String property : properties) {
+                List<String> parts = newArrayList(property.split("\\."));
+                JsonNode updatedNode = settings().getObjectMapper().convertValue(newObject, JsonNode.class);
+                newObject =
+                    visitElements(updatedNode, newObject, new Stack<>(), new PropertyMatcherFilteringVisitor(parts));
+            }
+            return newObject;
+        }
+
+        return entity;
+    }
+
+    private void verifyOverriddenPropertiesOnly(PropertyMatchers matchers) {
+        for (String property : matchers.getProperties()) {
+            List<String> parts = newArrayList(property.split("\\."));
+            JsonNode actual = settings().getObjectMapper().convertValue(this.actual, JsonNode.class);
+            visitElements(actual, new PropertyMatcherAssertingVisitor(parts, matchers));
+        }
+    }
+
     public FixtureAssert matchesWithStrictOrder(String... fixtures) throws JsonProcessingException {
-        assertJSON(sameJSONAs(beanFactory.createAsString(fixtures)).allowingExtraUnexpectedFields(), fixtures);
+        return matchesWithStrictOrder(empty(), fixtures);
+    }
+
+    public FixtureAssert matchesWithStrictOrder(PropertyMatchers matchers, String... fixtures) throws
+                                                                                               JsonProcessingException {
+        assertJSON(MATCHES_WITH_STRICT_ORDER, matchers, fixtures);
         return this;
     }
 
     public FixtureAssert matchesExactly(String... fixtures) throws JsonProcessingException {
-        assertJSON(sameJSONAs(beanFactory.createAsString(fixtures)).allowingAnyArrayOrdering(), fixtures);
+        return matchesExactly(empty(), fixtures);
+    }
+
+    public FixtureAssert matchesExactly(PropertyMatchers matchers, String... fixtures) throws JsonProcessingException {
+        assertJSON(MATCHES_EXACTLY, matchers, fixtures);
         return this;
     }
 
     public FixtureAssert matchesExactlyWithStrictOrder(String... fixtures) throws JsonProcessingException {
-        assertJSON(sameJSONAs(beanFactory.createAsString(fixtures)), fixtures);
+        return matchesExactlyWithStrictOrder(empty(), fixtures);
+    }
+
+    public FixtureAssert matchesExactlyWithStrictOrder(PropertyMatchers propertyMatchers, String... fixtures) throws
+                                                                                                              JsonProcessingException {
+        assertJSON(MATCHES_EXACTLY_WITH_STRICT_ORDER, propertyMatchers, fixtures);
         return this;
     }
+
+    public FixtureAssert toMatchSnapshot() throws IOException {
+        return toMatchSnapshot(false);
+    }
+
+    public FixtureAssert toMatchSnapshot(boolean regenerateFixture) throws IOException {
+        return toMatchSnapshot(regenerateFixture, empty());
+    }
+
+    public FixtureAssert toMatchSnapshot(boolean regenerateFixture, PropertyMatchers propertyMatchers) throws
+                                                                                                       IOException {
+        return toMatchSnapshot(MATCHES, regenerateFixture, propertyMatchers);
+    }
+
+    private FixtureAssert toMatchSnapshot(MatchingMode matchingMode,
+                                          boolean regenerateFixture,
+                                          PropertyMatchers propertyMatchers) throws IOException {
+        if (!snapshotGenerator.createOrUpdateFixture(removeOverriddenProperties(actual, propertyMatchers),
+                                                     regenerateFixture)) {
+            assertJSON(matchingMode, propertyMatchers, snapshotGenerator.getCurrentSnapshotFixtureName());
+        }
+
+        return this;
+    }
+
+    public FixtureAssert toMatchSnapshot(PropertyMatchers propertyMatchers) throws IOException {
+        return toMatchSnapshot(false, propertyMatchers);
+    }
+
+    public FixtureAssert toMatchSnapshotWithStrictOrder() throws IOException {
+        return toMatchSnapshotWithStrictOrder(false, empty());
+    }
+
+    public FixtureAssert toMatchSnapshotWithStrictOrder(boolean regenerateFixture,
+                                                        PropertyMatchers propertyMatchers) throws IOException {
+        return toMatchSnapshot(MATCHES_WITH_STRICT_ORDER, regenerateFixture, propertyMatchers);
+    }
+
+    public FixtureAssert toMatchSnapshotWithStrictOrder(PropertyMatchers propertyMatchers) throws IOException {
+        return toMatchSnapshotWithStrictOrder(false, propertyMatchers);
+    }
+
+    public FixtureAssert toMatchSnapshotWithStrictOrder(boolean regenerateFixture) throws IOException {
+        return toMatchSnapshotWithStrictOrder(false, empty());
+    }
+
+    public FixtureAssert toMatchSnapshotExactly() throws IOException {
+        return toMatchSnapshotExactly(false);
+    }
+
+    public FixtureAssert toMatchSnapshotExactly(boolean regenerateFixture) throws IOException {
+        return toMatchSnapshotExactly(regenerateFixture, empty());
+    }
+
+    public FixtureAssert toMatchSnapshotExactly(boolean regenerateFixture, PropertyMatchers propertyMatchers) throws
+                                                                                                              IOException {
+        return toMatchSnapshot(MATCHES_EXACTLY, regenerateFixture, propertyMatchers);
+    }
+
+    public FixtureAssert toMatchSnapshotExactly(PropertyMatchers propertyMatchers) throws IOException {
+        return toMatchSnapshotExactly(false, propertyMatchers);
+    }
+
+    public FixtureAssert toMatchSnapshotExactlyWithStrictOrder() throws IOException {
+        return toMatchSnapshotExactlyWithStrictOrder(false);
+    }
+
+    public FixtureAssert toMatchSnapshotExactlyWithStrictOrder(boolean regenerateFixture) throws IOException {
+        return toMatchSnapshotExactlyWithStrictOrder(regenerateFixture, empty());
+    }
+
+    public FixtureAssert toMatchSnapshotExactlyWithStrictOrder(boolean regenerateFixture,
+                                                               PropertyMatchers propertyMatchers) throws IOException {
+        return toMatchSnapshot(MATCHES_EXACTLY_WITH_STRICT_ORDER, regenerateFixture, propertyMatchers);
+    }
+
+    public FixtureAssert toMatchSnapshotExactlyWithStrictOrder(PropertyMatchers propertyMatchers) throws IOException {
+        return toMatchSnapshotExactlyWithStrictOrder(false, propertyMatchers);
+    }
+
 }

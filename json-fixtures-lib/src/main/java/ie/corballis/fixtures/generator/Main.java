@@ -3,6 +3,8 @@ package ie.corballis.fixtures.generator;
 import java.util.Map;
 import java.util.Scanner;
 
+import static ie.corballis.fixtures.settings.SettingsHolder.settings;
+
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
 
@@ -32,18 +34,16 @@ public class Main {
 
         System.out.println("Fixture name to generate the fixture with:");
         fixtureName = scanner.nextLine();
-        // e.g. "fixture1"
-
-        System.out.println("Should the new fixture be appended if the file already exists?");
-        append = scanner.nextBoolean();
-        // if false, nothing will be executed if the file already exists,
-        // if true, the new fixture will be appended to the end of the file
+        // e.g. "fixture1
 
         scanner.close();
     }
 
     private static void out() throws Exception {
         Map<String, Object> objectAsMap = new DefaultFixtureGenerator().generateMapFromBeanDirectly(clazz);
-        new DefaultFileSystemWriter().writeOut(folder, fileNamePrefix, fixtureName, objectAsMap, append);
+        new GeneratorFixtureWriter(settings().getObjectMapper()).write(folder,
+                                                                       fileNamePrefix,
+                                                                       fixtureName,
+                                                                       objectAsMap);
     }
 }
