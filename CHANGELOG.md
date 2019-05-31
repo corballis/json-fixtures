@@ -39,4 +39,4 @@ Settings.Builder settings = new Settings.Builder().setObjectMapper(objectMapper)
 
 FixtureAnnotations.initFixtures(this, settings);
 ```
-- Append mode is removed from `Generator`
+- Append mode was removed from `Generator`
