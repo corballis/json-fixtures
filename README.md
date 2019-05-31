@@ -248,9 +248,9 @@ that connects to the changed data.
 
 For more examples, see the tests in the library's test package `references`,
 together with the fixture files they rely on; especially
-[ReferencesTest](https://github.com/corballis/json-fixtures/blob/newFeatureReferences/json-fixtures-lib/src/test/java/ie/corballis/fixtures/references/ReferencesTest.java)
+[ReferencesTest](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/test/java/ie/corballis/fixtures/references/ReferencesTest.java)
 and
-[references.fixtures.json](https://github.com/corballis/json-fixtures/blob/newFeatureReferences/json-fixtures-lib/src/test/resources/references.fixtures.json).
+[references.fixtures.json](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/test/resources/references.fixtures.json).
 
 Circular dependencies between fixture references are NOT permitted in any depth. It will be detected by the library.
 
@@ -357,13 +357,13 @@ public void setUp() throws Exception {
     FixtureAnnotations.initFixtures(this, new Settings.Builder().setObjectMapper(objectMapper));
 }
 ```
-2. Snapshot `FileNamingStrategy`: You can read about [snapshots](#snapshot-matching) below. If the default naming strategy does not work for you, you can add your custom class any time. By default [TestClassFileNamingStrategy](https://github.com/corballis/json-fixtures/blob/snapshot-matching/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/write/TestClassFileNamingStrategy.java) is applied.
+2. Snapshot `FileNamingStrategy`: You can read about [snapshots](#snapshot-matching) below. If the default naming strategy does not work for you, you can add your custom class any time. By default [TestClassFileNamingStrategy](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/write/TestClassFileNamingStrategy.java) is applied.
 
-3. Generator `FileNamingStrategy`: Same as above, but here you can configure the naming strategy for the generator. If the default naming strategy does not work for you, you can add your custom class any time. By default [TestClassFileNamingStrategy](https://github.com/corballis/json-fixtures/blob/snapshot-matching/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/write/TestClassFileNamingStrategy.java) is applied.
+3. Generator `FileNamingStrategy`: Same as above, but here you can configure the naming strategy for the generator. If the default naming strategy does not work for you, you can add your custom class any time. By default [TestClassFileNamingStrategy](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/write/TestClassFileNamingStrategy.java) is applied.
 
 4. `SnapshotFixtureWriter`: If you want to change the way how the fixtures are written to the files, you can customize it by writing your custom `SnapshotFixtureWriter`. It can be useful when you are not using conventional [java project structures](#generate-snapshots-to-somewhere-else).
 
-5. `FixtureScanner`: By default `Json-fixtures` scans your classpath and looks for `.fixture.json` files. If you need more, you can write your custom scanner any time. Default class: [ClassPathFixtureScanner](https://github.com/corballis/json-fixtures/blob/snapshot-matching/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/ClassPathFixtureScanner.java)
+5. `FixtureScanner`: By default `Json-fixtures` scans your classpath and looks for `.fixture.json` files. If you need more, you can write your custom scanner any time. Default class: [ClassPathFixtureScanner](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/ClassPathFixtureScanner.java)
 
 ## Generating JSON fixture files from Java bean classes
 The second main feature of the library is the inverse of the first one: it helps you generate JSON fixtures based on the skeleton of a bean.
@@ -659,7 +659,7 @@ You can use the static helpers of the `PropertyMatchers` class to set your custo
     }
 ```
 
-This is a really silly example, because it accepts any `Integer` and `LocalDateTime` values. This doesn't really test anything, but keep in mind that you can write any `Matcher` class which extends from `org.hamcrest.Matcher`. Beside this, there are plenty of built in `Matchers` that you can use (Check the static helpers of `org.hamcrest.Matchers` class). Most of the time these will cover the regular use cases. You can see more examples in [PropertyMatcherTest](https://github.com/corballis/json-fixtures/blob/snapshot-matching/json-fixtures-lib/src/test/java/ie/corballis/fixtures/assertion/PropertyMatchersTest.java).
+This is a really silly example, because it accepts any `Integer` and `LocalDateTime` values. This doesn't really test anything, but keep in mind that you can write any `Matcher` class which extends from `org.hamcrest.Matcher`. Beside this, there are plenty of built in `Matchers` that you can use (Check the static helpers of `org.hamcrest.Matchers` class). Most of the time these will cover the regular use cases. You can see more examples in [PropertyMatcherTest](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/test/java/ie/corballis/fixtures/assertion/PropertyMatchersTest.java).
 
 **NOTE**: Currently you can write custom matchers for simple properties like Strings, Integers...etc. Matching of objects and lists are **not supported** yet. If you need anything like this, feel free to contribute. 
 
