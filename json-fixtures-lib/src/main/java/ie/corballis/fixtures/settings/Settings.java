@@ -4,8 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import ie.corballis.fixtures.io.ClassPathFixtureScanner;
-import ie.corballis.fixtures.io.FixtureScanner;
+import ie.corballis.fixtures.io.scanner.*;
 import ie.corballis.fixtures.io.write.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -134,6 +133,22 @@ public class Settings {
 
         public Builder setDefaultFixtureScanner() {
             return setFixtureScanner(new ClassPathFixtureScanner());
+        }
+
+        public Builder useTestFileNameFixtureScanner(Class testClass) {
+            return setFixtureScanner(new TestFileNameFixtureScanner(testClass));
+        }
+
+        public Builder useFolderFixtureScanner(Class testClass) {
+            return setFixtureScanner(new FolderFixtureScanner(testClass));
+        }
+
+        public Builder useFolderFixtureScanner(String path) {
+            return setFixtureScanner(new FolderFixtureScanner(path));
+        }
+
+        public Builder useCompositeFixtureScanner(FixtureScanner... scanners) {
+            return setFixtureScanner(new CompositeFixtureScanner(scanners));
         }
 
         public Settings build() {

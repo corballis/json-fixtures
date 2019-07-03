@@ -3,8 +3,8 @@ package ie.corballis.fixtures.snapshot;
 import com.fasterxml.jackson.databind.JsonNode;
 import ie.corballis.fixtures.core.BeanFactory;
 import ie.corballis.fixtures.core.InvocationContextHolder;
-import ie.corballis.fixtures.io.FixtureScanner;
 import ie.corballis.fixtures.io.Resource;
+import ie.corballis.fixtures.io.scanner.FixtureScanner;
 import ie.corballis.fixtures.io.write.DefaultSnapshotWriter;
 
 import java.io.IOException;

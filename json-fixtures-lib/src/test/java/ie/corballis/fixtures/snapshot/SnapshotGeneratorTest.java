@@ -1,9 +1,9 @@
 package ie.corballis.fixtures.snapshot;
 
 import ie.corballis.fixtures.core.BeanFactory;
-import ie.corballis.fixtures.io.ClassPathFixtureScanner;
 import ie.corballis.fixtures.io.ClassPathResource;
 import ie.corballis.fixtures.io.Resource;
+import ie.corballis.fixtures.io.scanner.ClassPathFixtureScanner;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
