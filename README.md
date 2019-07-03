@@ -382,15 +382,15 @@ FixtureAnnotations.initFixtures(this, new Settings.Builder().useCompositeFixture
 
 ## Fixture Scanners
 
-Initially we started with only one `Scanner`. The `ClassPathFixtureScanner` could search for  every `.fixtures.json` file on your classpath. After we have been using the default `Scanner` for a while we have started to see the the pitfalls of that concept. 
+Initially we started with only one `Scanner`. The `ClassPathFixtureScanner` could search for  every `.fixtures.json` file on your classpath. After we have been using the default `Scanner` for a while we have started to see the pitfalls of that concept. 
 
 Scanning the whole classpath means that we can use a fixture name only once.
-It can be a useful feature when we would like to merge or reference to fixtures from other files. However when your project grows, it's hard to remember which fixture names you have used earlier. Especially when multiple developers work on the same project.
+It can be a useful feature when we would like to merge or reference fixtures from other files. However when your project grows, it's hard to remember which fixture names you have used earlier. Especially when multiple developers work on the same project.
 
 To find a solution which fits most of your needs we came up with the following scanners:
 
 - `ClassPathFixtureScanner`: The default `Scanner`. You can read about the capabilities in the beginning of this section.
-- `TestFileNameFixtureScanner`: Scans all fixtures on your classpath which starts with the same name as your test class. e.g: You have your super test cases in `MySuperTests.java`. This `Scanner` will search for `MySuperTests*.fixtures.json` files. Practically you can split your fixtures to multiple files which belongs to the same test class. 
+- `TestFileNameFixtureScanner`: Scans all fixtures on your classpath which start with the same name as your test class. e.g: You have your super test cases in `MySuperTests.java`. This `Scanner` will search for `MySuperTests*.fixtures.json` files. Practically you can split your fixtures to multiple files which belong to the same test class. 
 - `FolderFixtureScanner`: If you don't like to store your fixture files next to the test class or you want to specify a folder somewhere else you can use this scanner. Fixtures will only be found in this folder. You need to make sure that the fixture names are unique in the fixture files which are located in the specified folder.
 - `CompositeFixtureScanner`: If you would like to enjoy the benefits of merging and references, but you don't want to use unique names everywhere, `CompositeFixtureScanner` helps you to combine multiple `Scanners`. You can specify as many scanners as you need. `CompositeFixtureScanner` additively combines the results of the fixture scanners. In the example below you can see how to store some base fixtures in a separated folder and in the meanwhile keep your test specific fixtures next to your test class: 
 ```java
