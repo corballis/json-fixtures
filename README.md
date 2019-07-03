@@ -366,7 +366,7 @@ public void setUp() throws Exception {
 5. `FixtureScanner`: By default `Json-fixtures` scans your classpath and looks for `.fixture.json` files. If you need more, you can read about the built-in scanners [below](https://github.com/corballis/json-fixtures#fixture-scanners). Default class: [ClassPathFixtureScanner](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/ClassPathFixtureScanner.java) 
 You can see some examples here about how to configure the built-in scanners:
 ```java
-// search for fixture files which has the same name as the current test class
+// search for fixture files which have the same name as the current test class
 FixtureAnnotations.initFixtures(this, new Settings.Builder().useTestFileNameFixtureScanner(this));
 
 // search for fixture files which are located in the same folder as your test class
