@@ -1,8 +1,12 @@
 package ie.corballis.fixtures.io;
 
+import com.google.common.collect.ImmutableList;
 import ie.corballis.fixtures.util.ClassUtils;
 import ie.corballis.fixtures.util.ResourceUtils;
 import ie.corballis.fixtures.util.StringUtils;
+import org.reflections.Reflections;
+import org.reflections.scanners.ResourcesScanner;
+import org.reflections.util.ClasspathHelper;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,8 +14,13 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
 public class ClassPathResource implements Resource {
 
@@ -20,6 +29,22 @@ public class ClassPathResource implements Resource {
     private ClassLoader classLoader;
 
     private Class<?> clazz;
+
+    public static List<Resource> collectClasspathResources(Pattern pattern) {
+        Reflections reflections = new Reflections(ClasspathHelper.forJavaClassPath(), new ResourcesScanner());
+        Set<String> fixturePaths = reflections.getResources(pattern);
+        return ImmutableList.copyOf(convertToResources(fixturePaths));
+    }
+
+    private static List<Resource> convertToResources(Collection<String> paths) {
+        List<Resource> resources = newArrayList();
+
+        for (String path : paths) {
+            resources.add(new ClassPathResource(path));
+        }
+
+        return resources;
+    }
 
     public ClassPathResource(String path) {
         this(path, (ClassLoader) null);

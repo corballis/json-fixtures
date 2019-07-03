@@ -363,7 +363,41 @@ public void setUp() throws Exception {
 
 4. `SnapshotFixtureWriter`: If you want to change the way how the fixtures are written to the files, you can customize it by writing your custom `SnapshotFixtureWriter`. It can be useful when you are not using conventional [java project structures](#generate-snapshots-to-somewhere-else).
 
-5. `FixtureScanner`: By default `Json-fixtures` scans your classpath and looks for `.fixture.json` files. If you need more, you can write your custom scanner any time. Default class: [ClassPathFixtureScanner](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/ClassPathFixtureScanner.java)
+5. `FixtureScanner`: By default `Json-fixtures` scans your classpath and looks for `.fixture.json` files. If you need more, you can read about the built-in scanners [below](https://github.com/corballis/json-fixtures#fixture-scanners). Default class: [ClassPathFixtureScanner](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/main/java/ie/corballis/fixtures/io/ClassPathFixtureScanner.java) 
+You can see some examples here about how to configure the built-in scanners:
+```java
+// search for fixture files which has the same name as the current test class
+FixtureAnnotations.initFixtures(this, new Settings.Builder().useTestFileNameFixtureScanner(this));
+
+// search for fixture files which are located in the same folder as your test class
+FixtureAnnotations.initFixtures(this, new Settings.Builder().useFolderFixtureScanner(this));
+
+// search for fixture files which are located in /your/custom/folder
+FixtureAnnotations.initFixtures(this, new Settings.Builder().useFolderFixtureScanner("/your/custom/folder"));
+
+// search for fixture files which are located in /your/custom/folder and add the fixtures with the same name as the test class too.
+FixtureAnnotations.initFixtures(this, new Settings.Builder().useCompositeFixtureScanner(new FolderFixtureScanner("/your/custom/folder"), new TestFileNameFixtureScanner(getClass())));
+
+``` 
+
+## Fixture Scanners
+
+Initially we started with only one `Scanner`. The `ClassPathFixtureScanner` could search for  every `.fixtures.json` file on your classpath. After we have been using the default `Scanner` for a while we have started to see the the pitfalls of that concept. 
+
+Scanning the whole classpath means that we can use a fixture name only once.
+It can be a useful feature when we would like to merge or reference to fixtures from other files. However when your project grows, it's hard to remember which fixture names you have used earlier. Especially when multiple developers work on the same project.
+
+To find a solution which fits most of your needs we came up with the following scanners:
+
+- `ClassPathFixtureScanner`: The default `Scanner`. You can read about the capabilities in the beginning of this section.
+- `TestFileNameFixtureScanner`: Scans all fixtures on your classpath which starts with the same name as your test class. e.g: You have your super test cases in `MySuperTests.java`. This `Scanner` will search for `MySuperTests*.fixtures.json` files. Practically you can split your fixtures to multiple files which belongs to the same test class. 
+- `FolderFixtureScanner`: If you don't like to store your fixture files next to the test class or you want to specify a folder somewhere else you can use this scanner. Fixtures will only be found in this folder. You need to make sure that the fixture names are unique in the fixture files which are located in the specified folder.
+- `CompositeFixtureScanner`: If you would like to enjoy the benefits of merging and references, but you don't want to use unique names everywhere, `CompositeFixtureScanner` helps you to combine multiple `Scanners`. You can specify as many scanners as you need. `CompositeFixtureScanner` additively combines the results of the fixture scanners. In the example below you can see how to store some base fixtures in a separated folder and in the meanwhile keep your test specific fixtures next to your test class: 
+```java
+new CompositeFixtureScanner(new FolderFixtureScanner('/my/common/fixtures'), new TestFileNameFixtureScanner(MySuperTests.class));
+```
+You can specify the scanner of your need in the `SettingsBuilder`. Read more about it in the [Configure Json-fixtures section. ](https://github.com/corballis/json-fixtures#configure-json-fixtures)
+
 
 ## Generating JSON fixture files from Java bean classes
 The second main feature of the library is the inverse of the first one: it helps you generate JSON fixtures based on the skeleton of a bean.

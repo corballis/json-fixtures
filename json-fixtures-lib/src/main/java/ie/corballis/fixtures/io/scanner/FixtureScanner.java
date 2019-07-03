@@ -1,4 +1,6 @@
-package ie.corballis.fixtures.io;
+package ie.corballis.fixtures.io.scanner;
+
+import ie.corballis.fixtures.io.Resource;
 
 import java.util.List;
 

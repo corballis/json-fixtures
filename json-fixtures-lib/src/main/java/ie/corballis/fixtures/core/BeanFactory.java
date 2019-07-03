@@ -11,8 +11,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import ie.corballis.fixtures.io.DefaultFixtureReader;
 import ie.corballis.fixtures.io.FixtureReader;
-import ie.corballis.fixtures.io.FixtureScanner;
 import ie.corballis.fixtures.io.Resource;
+import ie.corballis.fixtures.io.scanner.FixtureScanner;
 
 import java.io.IOException;
 import java.util.*;
