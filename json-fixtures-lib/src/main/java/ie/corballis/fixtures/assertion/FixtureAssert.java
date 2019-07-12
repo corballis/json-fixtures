@@ -2,8 +2,6 @@ package ie.corballis.fixtures.assertion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import ie.corballis.fixtures.core.BeanFactory;
-import ie.corballis.fixtures.snapshot.SnapshotGenerator;
 import org.fest.assertions.api.AbstractAssert;
 import org.fest.assertions.api.Assertions;
 import org.hamcrest.MatcherAssert;
@@ -23,15 +21,6 @@ import static ie.corballis.fixtures.util.JsonUtils.visitElements;
 import static ie.corballis.fixtures.util.StringUtils.unifyLineEndings;
 
 public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
-
-    private static final BeanFactory beanFactory;
-    private static final SnapshotGenerator snapshotGenerator;
-
-    static {
-        beanFactory = new BeanFactory();
-        beanFactory.init();
-        snapshotGenerator = new SnapshotGenerator(beanFactory);
-    }
 
     public FixtureAssert(Object actual) {
         super(actual, FixtureAssert.class);
@@ -53,7 +42,7 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
     private void assertJSON(MatchingMode matchingMode, PropertyMatchers matchers, String... fixtures) throws
                                                                                                       JsonProcessingException {
         isNotNull();
-        SameJSONAs<String> expected = matchingMode.getJsonMatcher(beanFactory.createAsString(fixtures));
+        SameJSONAs<String> expected = matchingMode.getJsonMatcher(settings().getBeanFactory().createAsString(fixtures));
 
         if (matchers.isEmpty()) {
             assertThatExpectedMatchesWithActual(expected,
@@ -79,7 +68,7 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
                                                                                            JsonProcessingException {
         String actualPrettyString = unifyLineEndings(settings().getObjectMapper().writerWithDefaultPrettyPrinter()
                                                                .writeValueAsString(actual));
-        String expectedPrettyString = unifyLineEndings(beanFactory.createAsString(true, fixtures));
+        String expectedPrettyString = unifyLineEndings(settings().getBeanFactory().createAsString(true, fixtures));
         System.err.print(assertionError.getMessage());
         Assertions.assertThat(actualPrettyString).isEqualTo(expectedPrettyString);
     }
@@ -88,7 +77,8 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
                                                     PropertyMatchers matchers,
                                                     String[] fixtures) throws JsonProcessingException {
         Object clearedActual = removeOverriddenProperties(this.actual, matchers);
-        Object clearedExpected = removeOverriddenProperties(beanFactory.create(Map.class, fixtures), matchers);
+        Object clearedExpected = removeOverriddenProperties(settings().getBeanFactory().create(Map.class, fixtures),
+                                                            matchers);
 
         String clearedActualString = settings().getObjectMapper().writeValueAsString(clearedActual);
         SameJSONAs<String> expectedMatcher =
@@ -167,9 +157,12 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
     private FixtureAssert toMatchSnapshot(MatchingMode matchingMode,
                                           boolean regenerateFixture,
                                           PropertyMatchers propertyMatchers) throws IOException {
-        if (!snapshotGenerator.createOrUpdateFixture(removeOverriddenProperties(actual, propertyMatchers),
-                                                     regenerateFixture)) {
-            assertJSON(matchingMode, propertyMatchers, snapshotGenerator.getCurrentSnapshotFixtureName());
+        if (!settings().getSnapshotGenerator()
+                       .createOrUpdateFixture(removeOverriddenProperties(actual, propertyMatchers),
+                                              regenerateFixture)) {
+            assertJSON(matchingMode,
+                       propertyMatchers,
+                       settings().getSnapshotGenerator().getCurrentSnapshotFixtureName());
         }
 
         return this;

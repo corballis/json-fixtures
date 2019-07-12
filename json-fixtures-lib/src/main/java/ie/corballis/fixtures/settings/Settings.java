@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import ie.corballis.fixtures.core.BeanFactory;
 import ie.corballis.fixtures.io.scanner.*;
 import ie.corballis.fixtures.io.write.*;
+import ie.corballis.fixtures.snapshot.SnapshotGenerator;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -16,6 +18,8 @@ public class Settings {
     private final FileNamingStrategy generatorFileNamingStrategy;
     private final SnapshotFixtureWriter snapshotFixtureWriter;
     private final FixtureScanner fixtureScanner;
+    private final BeanFactory beanFactory;
+    private final SnapshotGenerator snapshotGenerator;
 
     public Settings(Settings.Builder builder) {
         this.objectMapper = builder.objectMapper;
@@ -23,6 +27,9 @@ public class Settings {
         this.generatorFileNamingStrategy = builder.generatorFileNamingStrategy;
         this.snapshotFixtureWriter = builder.snapshotFixtureWriter;
         this.fixtureScanner = builder.fixtureScanner;
+        this.beanFactory = new BeanFactory(this.objectMapper, this.fixtureScanner);
+        this.beanFactory.init();
+        this.snapshotGenerator = new SnapshotGenerator(beanFactory, this.fixtureScanner);
     }
 
     public static Settings defaultSettings() {
@@ -47,6 +54,14 @@ public class Settings {
 
     public FixtureScanner getFixtureScanner() {
         return fixtureScanner;
+    }
+
+    public BeanFactory getBeanFactory() {
+        return beanFactory;
+    }
+
+    public SnapshotGenerator getSnapshotGenerator() {
+        return snapshotGenerator;
     }
 
     public static class Builder {

@@ -2,7 +2,6 @@ package ie.corballis.fixtures.annotation;
 
 import ie.corballis.fixtures.core.BeanFactory;
 import ie.corballis.fixtures.settings.Settings;
-import ie.corballis.fixtures.snapshot.SnapshotGenerator;
 import ie.corballis.fixtures.util.FieldSetter;
 
 import java.io.IOException;
@@ -14,6 +13,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 import static ie.corballis.fixtures.core.InvocationContextHolder.initTestExecutorThread;
 import static ie.corballis.fixtures.settings.Settings.defaultSettings;
+import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 import static ie.corballis.fixtures.settings.SettingsHolder.updateSettings;
 import static java.lang.Thread.currentThread;
 
@@ -35,11 +35,9 @@ public class FixtureAnnotations {
         updateSettings(settings == null ? defaultSettings() : settings.build());
         initTestExecutorThread(currentThread());
 
-        BeanFactory beanFactory = new BeanFactory();
-        beanFactory.init();
-        new SnapshotGenerator(beanFactory).validateSnapshots();
+        settings().getSnapshotGenerator().validateSnapshots();
 
-        processAnnotations(targetInstance, beanFactory);
+        processAnnotations(targetInstance, settings().getBeanFactory());
     }
 
     private static void processAnnotations(Object targetInstance, BeanFactory beanFactory) throws Exception {
