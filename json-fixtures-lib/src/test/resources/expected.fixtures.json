@@ -69,6 +69,36 @@
       }
     ]
   },
+  "persons": [
+    {
+      "age": 1,
+      "dog": {
+        "name": "XXX",
+        "age": 3.23,
+        "breed": "labrador"
+      },
+      "cars": []
+    },
+    {
+      "age": 2,
+      "dog": {
+        "name": "YYY",
+        "age": 5.14,
+        "breed": "dalmatian"
+      },
+      "cars": [
+        {
+          "model": "Suzuki"
+        },
+        {
+          "model": "Toyota"
+        },
+        {
+          "model": "Audi"
+        }
+      ]
+    }
+  ],
   "circular": {
     "age": 0,
     "dog": {

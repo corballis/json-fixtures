@@ -8,10 +8,7 @@ import org.hamcrest.MatcherAssert;
 import uk.co.datumedge.hamcrest.json.SameJSONAs;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static ie.corballis.fixtures.assertion.MatchingMode.*;
@@ -77,7 +74,8 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
                                                     PropertyMatchers matchers,
                                                     String[] fixtures) throws JsonProcessingException {
         Object clearedActual = removeOverriddenProperties(this.actual, matchers);
-        Object clearedExpected = removeOverriddenProperties(settings().getBeanFactory().create(Map.class, fixtures),
+        Object clearedExpected = removeOverriddenProperties(settings().getBeanFactory()
+                                                                      .create(getTypeToConvert(this.actual), fixtures),
                                                             matchers);
 
         String clearedActualString = settings().getObjectMapper().writeValueAsString(clearedActual);
@@ -91,7 +89,7 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
         Set<String> properties = matchers.getProperties();
 
         if (!matchers.isEmpty()) {
-            Object newObject = settings().getObjectMapper().convertValue(entity, Map.class);
+            Object newObject = settings().getObjectMapper().convertValue(entity, getTypeToConvert(entity));
             for (String property : properties) {
                 List<String> parts = newArrayList(property.split("\\."));
                 JsonNode updatedNode = settings().getObjectMapper().convertValue(newObject, JsonNode.class);
@@ -102,6 +100,10 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
         }
 
         return entity;
+    }
+
+    private Class<?> getTypeToConvert(Object entity) {
+        return (entity.getClass().isArray() || entity instanceof Collection) ? List.class : Map.class;
     }
 
     private void verifyOverriddenPropertiesOnly(PropertyMatchers matchers) {

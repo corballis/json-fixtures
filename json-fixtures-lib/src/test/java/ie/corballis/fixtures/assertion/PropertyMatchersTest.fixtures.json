@@ -159,5 +159,35 @@
         }
       ]
     ]
-  }
+  },
+  "toMatchSnapshotShouldNotWriteOverriddenPropertiesInList-1": [
+    {
+      "age": 1000,
+      "dog": {
+        "name": "XXX",
+        "age": 3.23,
+        "breed": "labrador"
+      },
+      "cars": []
+    },
+    {
+      "age": 2000,
+      "dog": {
+        "name": "YYY",
+        "age": 5.14,
+        "breed": "dalmatian"
+      },
+      "cars": [
+        {
+          "model": "Suzuki"
+        },
+        {
+          "model": "Toyota"
+        },
+        {
+          "model": "Audi"
+        }
+      ]
+    }
+  ]
 }
