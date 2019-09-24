@@ -20,6 +20,7 @@ import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -37,6 +38,8 @@ public class PropertyMatchersTest {
     private Owner ownerForMatchers;
     @Fixture
     private Map testMap;
+    @Fixture
+    private List<Person> persons;
 
     @Before
     public void setUp() throws Exception {
@@ -55,6 +58,11 @@ public class PropertyMatchersTest {
     @Test
     public void toMatchSnapshotShouldNotWriteOverriddenProperties() throws IOException {
         FixtureAssert.assertThat(person1).toMatchSnapshotExactlyWithStrictOrder(overriddenMatchers("age", anything()));
+    }
+
+    @Test
+    public void toMatchSnapshotShouldNotWriteOverriddenPropertiesInList() throws IOException {
+        FixtureAssert.assertThat(persons).toMatchSnapshotExactlyWithStrictOrder(overriddenMatchers("age", anything()));
     }
 
     @Test
