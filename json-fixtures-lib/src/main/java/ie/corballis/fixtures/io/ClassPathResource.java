@@ -1,12 +1,11 @@
 package ie.corballis.fixtures.io;
 
 import com.google.common.collect.ImmutableList;
+import ie.corballis.fixtures.settings.Settings;
 import ie.corballis.fixtures.util.ClassUtils;
 import ie.corballis.fixtures.util.ResourceUtils;
 import ie.corballis.fixtures.util.StringUtils;
 import org.reflections.Reflections;
-import org.reflections.scanners.ResourcesScanner;
-import org.reflections.util.ClasspathHelper;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -30,8 +29,8 @@ public class ClassPathResource implements Resource {
 
     private Class<?> clazz;
 
-    public static List<Resource> collectClasspathResources(Pattern pattern) {
-        Reflections reflections = new Reflections(ClasspathHelper.forJavaClassPath(), new ResourcesScanner());
+    public static List<Resource> collectClasspathResources(Pattern pattern, Reflections reflections) {
+        reflections = reflections == null ? Settings.Builder.DEFAULT_REFLECTIONS : reflections;
         Set<String> fixturePaths = reflections.getResources(pattern);
         return ImmutableList.copyOf(convertToResources(fixturePaths));
     }

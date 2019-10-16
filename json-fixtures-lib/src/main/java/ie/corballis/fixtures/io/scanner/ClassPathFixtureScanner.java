@@ -2,6 +2,7 @@ package ie.corballis.fixtures.io.scanner;
 
 import ie.corballis.fixtures.io.ClassPathResource;
 import ie.corballis.fixtures.io.Resource;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,10 +15,14 @@ public class ClassPathFixtureScanner implements FixtureScanner {
 
     private static final String FIXTURE_REG_EXP = ".*\\.fixtures\\.json";
     private static final Pattern FIXTURE_PATTERN = Pattern.compile(FIXTURE_REG_EXP);
-    private static final List<Resource> resources;
+    private final List<Resource> resources;
 
-    static {
-        resources = ClassPathResource.collectClasspathResources(FIXTURE_PATTERN);
+    public ClassPathFixtureScanner() {
+        this(null);
+    }
+
+    public ClassPathFixtureScanner(Reflections reflections) {
+        resources = ClassPathResource.collectClasspathResources(FIXTURE_PATTERN, reflections);
         logger.debug("Detected fixture files: {}", resources);
     }
 
