@@ -1,6 +1,7 @@
 package ie.corballis.fixtures.io.scanner;
 
 import ie.corballis.fixtures.io.Resource;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,8 +16,12 @@ class PrefixFixtureScanner implements FixtureScanner {
     private final List<Resource> resources;
 
     public PrefixFixtureScanner(String pattern) {
+        this(pattern, null);
+    }
+
+    public PrefixFixtureScanner(String pattern, Reflections reflections) {
         String regex = String.format("%s.*\\.fixtures\\.json", pattern);
-        resources = collectClasspathResources(Pattern.compile(regex));
+        resources = collectClasspathResources(Pattern.compile(regex), reflections);
         logger.debug("Detected fixture files: {}", resources);
     }
 

@@ -8,6 +8,9 @@ import ie.corballis.fixtures.core.BeanFactory;
 import ie.corballis.fixtures.io.scanner.*;
 import ie.corballis.fixtures.io.write.*;
 import ie.corballis.fixtures.snapshot.SnapshotGenerator;
+import org.reflections.Reflections;
+import org.reflections.scanners.ResourcesScanner;
+import org.reflections.util.ClasspathHelper;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -66,11 +69,15 @@ public class Settings {
 
     public static class Builder {
 
+        public static final Reflections DEFAULT_REFLECTIONS = new Reflections(ClasspathHelper.forJavaClassPath(),
+                                                                              new ResourcesScanner());
+
         private FixtureScanner fixtureScanner;
         private FileNamingStrategy snapshotFileNamingStrategy;
         private FileNamingStrategy generatorFileNamingStrategy;
         private SnapshotFixtureWriter snapshotFixtureWriter;
         private ObjectMapper objectMapper;
+        private Reflections reflections;
 
         public Builder() {
             FileNamingStrategy fileNamingStrategy = TestClassFileNamingStrategy.getInstance();
@@ -79,15 +86,6 @@ public class Settings {
             setDefaultFixtureScanner();
             setSnapshotFileNamingStrategy(fileNamingStrategy);
             setGeneratorFileNamingStrategy(fileNamingStrategy);
-        }
-
-        public ObjectMapper getObjectMapper() {
-            return objectMapper;
-        }
-
-        public Builder setObjectMapper(ObjectMapper objectMapper) {
-            this.objectMapper = objectMapper;
-            return this;
         }
 
         public Builder setDefaultObjectMapper() {
@@ -102,6 +100,41 @@ public class Settings {
             objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
             objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
             return objectMapper;
+        }
+
+        public Builder setDefaultSnapshotWriter() {
+            checkNotNull(objectMapper, "You must set ObjectMapper first to instantiate DefaultSnapshotWriter");
+            return setSnapshotFixtureWriter(new DefaultSnapshotWriter(objectMapper));
+        }
+
+        public Builder setDefaultFixtureScanner() {
+            return setFixtureScanner(new ClassPathFixtureScanner(getReflections()));
+        }
+
+        public Builder setFixtureScanner(FixtureScanner fixtureScanner) {
+            this.fixtureScanner = fixtureScanner;
+            return this;
+        }
+
+        public Reflections getReflections() {
+            if (reflections == null) {
+                reflections = DEFAULT_REFLECTIONS;
+            }
+            return reflections;
+        }
+
+        public Builder setReflections(Reflections reflections) {
+            this.reflections = reflections;
+            return this;
+        }
+
+        public ObjectMapper getObjectMapper() {
+            return objectMapper;
+        }
+
+        public Builder setObjectMapper(ObjectMapper objectMapper) {
+            this.objectMapper = objectMapper;
+            return this;
         }
 
         public FileNamingStrategy getSnapshotFileNamingStrategy() {
@@ -131,27 +164,13 @@ public class Settings {
             return this;
         }
 
-        public Builder setDefaultSnapshotWriter() {
-            checkNotNull(objectMapper, "You must set ObjectMapper first to instantiate DefaultSnapshotWriter");
-            return setSnapshotFixtureWriter(new DefaultSnapshotWriter(objectMapper));
-        }
-
         public Builder setSnapshotFolderPath(String snapshotFolderPath) {
             this.snapshotFixtureWriter = new StaticPathDefaultSnapshotWriter(snapshotFolderPath, objectMapper);
             return this;
         }
 
-        public Builder setFixtureScanner(FixtureScanner fixtureScanner) {
-            this.fixtureScanner = fixtureScanner;
-            return this;
-        }
-
-        public Builder setDefaultFixtureScanner() {
-            return setFixtureScanner(new ClassPathFixtureScanner());
-        }
-
         public Builder useTestFileNameFixtureScanner(Class testClass) {
-            return setFixtureScanner(new TestFileNameFixtureScanner(testClass));
+            return setFixtureScanner(new TestFileNameFixtureScanner(testClass, getReflections()));
         }
 
         public Builder useFolderFixtureScanner(Class testClass) {

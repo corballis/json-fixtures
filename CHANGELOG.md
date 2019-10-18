@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.4] - 2019-10-16
+### Fixed
+- Every instantiation of `Reflections` class scans the full java classpath to initialize its internal cache. 
+In the previous versions this happened every time when `FixtureAnnotations.initFixtures` have been called, 
+which required extra overhead and made the test execution much slower.
+To prevent this, `ClassPathFixtureScanner` classes can be initialized with a pre-loaded `Reflections` instance. 
+If you use the the default settings, no more actions needed. 
+In this case, the default `Reflections` instance is created along with the `Settings` class.
+
 ## [2.1.3] - 2019-09-24
 ### Fixed
 - FixtureAssert updated to handle lists properly when property matchers are used.
