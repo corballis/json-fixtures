@@ -5,10 +5,6 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import org.reflections.Reflections;
-import org.reflections.scanners.ResourcesScanner;
-import org.reflections.util.ClasspathHelper;
-
 import ie.corballis.fixtures.core.BeanFactory;
 import ie.corballis.fixtures.core.JacksonDeserializer;
 import ie.corballis.fixtures.io.DeserializeMapper;
@@ -84,17 +80,12 @@ public class Settings {
     }
 
     public static class Builder {
-
-        public static final Reflections DEFAULT_REFLECTIONS = new Reflections(ClasspathHelper.forJavaClassPath(),
-                                                                              new ResourcesScanner());
-
         private DeserializeMapper deserializeMapper;
         private FixtureScanner fixtureScanner;
         private FileNamingStrategy snapshotFileNamingStrategy;
         private FileNamingStrategy generatorFileNamingStrategy;
         private SnapshotFixtureWriter snapshotFixtureWriter;
         private ObjectMapper objectMapper;
-        private Reflections reflections;
 
         public Builder() {
             FileNamingStrategy fileNamingStrategy = TestClassFileNamingStrategy.getInstance();
@@ -136,18 +127,6 @@ public class Settings {
 
         public Builder setFixtureScanner(FixtureScanner fixtureScanner) {
             this.fixtureScanner = fixtureScanner;
-            return this;
-        }
-
-        public Reflections getReflections() {
-            if (reflections == null) {
-                reflections = DEFAULT_REFLECTIONS;
-            }
-            return reflections;
-        }
-
-        public Builder setReflections(Reflections reflections) {
-            this.reflections = reflections;
             return this;
         }
 

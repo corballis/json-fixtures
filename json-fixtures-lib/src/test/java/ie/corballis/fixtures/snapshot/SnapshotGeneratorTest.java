@@ -12,8 +12,8 @@ import java.util.List;
 
 import ie.corballis.fixtures.core.BeanFactory;
 import ie.corballis.fixtures.io.Resource;
-import ie.corballis.fixtures.io.scanner.ClassPathFixtureScanner;
 import ie.corballis.fixtures.io.scanner.FileFixtureScanner;
+import ie.corballis.fixtures.io.scanner.FixtureScanner;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static ie.corballis.fixtures.settings.SettingsHolder.settings;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 public class SnapshotGeneratorTest {
 
     @Mock
-    private ClassPathFixtureScanner scanner;
+    private FixtureScanner scanner;
 
     private SnapshotGenerator snapshotGenerator;
 
@@ -47,8 +47,8 @@ public class SnapshotGeneratorTest {
 
         expectedException.expectMessage("ie.corballis.fixtures.snapshot.NoSuchClass does not exist anymore in ");
         expectedException.expectMessage("invalid-fixture.json' file. " + "If the file has been renamed/removed, " +
-                                        "please update the value of _AUTO_GENERATED_FOR_ property " +
-                                        "and move the file to the correct location");
+                "please update the value of _AUTO_GENERATED_FOR_ property " +
+                "and move the file to the correct location");
 
         snapshotGenerator.validateSnapshots();
     }
