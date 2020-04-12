@@ -9,13 +9,19 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Joiner;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import ie.corballis.fixtures.io.DefaultFixtureReader;
+import ie.corballis.fixtures.io.DeserializeMapper;
 import ie.corballis.fixtures.io.FixtureReader;
 import ie.corballis.fixtures.io.Resource;
 import ie.corballis.fixtures.io.scanner.FixtureScanner;
-
-import java.io.IOException;
-import java.util.*;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -34,18 +40,26 @@ public class BeanFactory {
     private Cache<String, JsonNode> fixtures = CacheBuilder.newBuilder().build();
 
     public BeanFactory() {
-        this(settings().getObjectMapper(), settings().getFixtureScanner());
+        this(settings().getObjectMapper(), settings().getFixtureScanner(),
+                new JacksonDeserializer(settings().getObjectMapper()));
+    }
+
+    public BeanFactory(ObjectMapper objectMapper, FixtureScanner scanner, DeserializeMapper deserializeMapper) {
+        this.objectMapper = objectMapper;
+        this.scanner = scanner;
+        this.reader = new DefaultFixtureReader(objectMapper);
+        this.referenceResolver = new ReferenceResolver(deserializeMapper, this);
     }
 
     public BeanFactory(ObjectMapper objectMapper, FixtureScanner scanner) {
         this.objectMapper = objectMapper;
         this.scanner = scanner;
         this.reader = new DefaultFixtureReader(objectMapper);
-        this.referenceResolver = new ReferenceResolver(objectMapper, this);
+        this.referenceResolver = new ReferenceResolver(new JacksonDeserializer(objectMapper), this);
     }
 
-    public BeanFactory(ObjectMapper objectMapper) {
-        this(objectMapper, null);
+    public BeanFactory(ObjectMapper objectMapper, DeserializeMapper deserializeMapper) {
+        this(objectMapper, null, deserializeMapper);
     }
 
     public void init() {
@@ -106,8 +120,8 @@ public class BeanFactory {
 
     public String createAsString(boolean pretty, JsonNode jsonNode) throws JsonProcessingException {
         return pretty ?
-               objectMapper.writer().withDefaultPrettyPrinter().writeValueAsString(jsonNode) :
-               jsonNode.toString();
+                objectMapper.writer().withDefaultPrettyPrinter().writeValueAsString(jsonNode) :
+                jsonNode.toString();
     }
 
     public <T> T create(Class<T> type, String... fixtureNames) {
@@ -136,7 +150,7 @@ public class BeanFactory {
 
     private JsonNode getFixtureAsJsonNodeOrFail(String fixtureName) {
         return getFixtureAsJsonNode(fixtureName).orElseThrow(() -> new NullPointerException(
-            "'" + fixtureName + "' is not a valid fixture name!"));
+                "'" + fixtureName + "' is not a valid fixture name!"));
     }
 
     public Optional<JsonNode> getFixtureAsJsonNode(String fixtureName) {

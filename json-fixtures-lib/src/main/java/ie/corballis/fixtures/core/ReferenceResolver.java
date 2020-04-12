@@ -2,9 +2,10 @@ package ie.corballis.fixtures.core;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Stack;
+
+import ie.corballis.fixtures.io.DeserializeMapper;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
@@ -12,22 +13,22 @@ import static ie.corballis.fixtures.util.JsonUtils.visitElements;
 
 public class ReferenceResolver {
 
-    private final ObjectMapper objectMapper;
+    private final DeserializeMapper deserializeMapper;
     private final BeanFactory beanFactory;
 
-    public ReferenceResolver(ObjectMapper objectMapper, BeanFactory beanFactory) {
-        this.objectMapper = objectMapper;
+    public ReferenceResolver(DeserializeMapper deserializeMapper, BeanFactory beanFactory) {
+        this.deserializeMapper = deserializeMapper;
         this.beanFactory = beanFactory;
     }
 
     public <T> T resolve(JsonNode original, Class<T> type, String fixtureName, String referencePrefix) {
         Object baseObjectMap = resolveAndCreateBaseObjectMap(original, fixtureName, referencePrefix);
-        return objectMapper.convertValue(baseObjectMap, type);
+        return deserializeMapper.convertValue(baseObjectMap, type);
     }
 
     public <T> T resolve(JsonNode original, JavaType type, String fixtureName, String referencePrefix) {
         Object baseObjectMap = resolveAndCreateBaseObjectMap(original, fixtureName, referencePrefix);
-        return objectMapper.convertValue(baseObjectMap, type);
+        return deserializeMapper.convertValue(baseObjectMap, type);
     }
 
     private Object resolveAndCreateBaseObjectMap(JsonNode original, String fixtureName, String referencePrefix) {

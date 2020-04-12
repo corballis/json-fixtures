@@ -4,13 +4,27 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import ie.corballis.fixtures.core.BeanFactory;
-import ie.corballis.fixtures.io.scanner.*;
-import ie.corballis.fixtures.io.write.*;
-import ie.corballis.fixtures.snapshot.SnapshotGenerator;
+
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 import org.reflections.util.ClasspathHelper;
+
+import ie.corballis.fixtures.core.BeanFactory;
+import ie.corballis.fixtures.core.JacksonDeserializer;
+import ie.corballis.fixtures.io.DeserializeMapper;
+import ie.corballis.fixtures.io.scanner.ClassPathFixtureScanner;
+import ie.corballis.fixtures.io.scanner.CompositeFixtureScanner;
+import ie.corballis.fixtures.io.scanner.FixtureScanner;
+import ie.corballis.fixtures.io.scanner.FolderFixtureScanner;
+import ie.corballis.fixtures.io.scanner.TestFileNameFixtureScanner;
+import ie.corballis.fixtures.io.write.DefaultSnapshotWriter;
+import ie.corballis.fixtures.io.write.FileNamingStrategy;
+import ie.corballis.fixtures.io.write.FixtureWriter;
+import ie.corballis.fixtures.io.write.JsonFixturesPrettyPrinter;
+import ie.corballis.fixtures.io.write.SnapshotFixtureWriter;
+import ie.corballis.fixtures.io.write.StaticPathDefaultSnapshotWriter;
+import ie.corballis.fixtures.io.write.TestClassFileNamingStrategy;
+import ie.corballis.fixtures.snapshot.SnapshotGenerator;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -23,6 +37,7 @@ public class Settings {
     private final FixtureScanner fixtureScanner;
     private final BeanFactory beanFactory;
     private final SnapshotGenerator snapshotGenerator;
+    private final DeserializeMapper deserializeMapper;
 
     public Settings(Settings.Builder builder) {
         this.objectMapper = builder.objectMapper;
@@ -30,7 +45,8 @@ public class Settings {
         this.generatorFileNamingStrategy = builder.generatorFileNamingStrategy;
         this.snapshotFixtureWriter = builder.snapshotFixtureWriter;
         this.fixtureScanner = builder.fixtureScanner;
-        this.beanFactory = new BeanFactory(this.objectMapper, this.fixtureScanner);
+        this.deserializeMapper = builder.deserializeMapper;
+        this.beanFactory = new BeanFactory(this.objectMapper, this.fixtureScanner, this.deserializeMapper);
         this.beanFactory.init();
         this.snapshotGenerator = new SnapshotGenerator(beanFactory, this.fixtureScanner);
     }
@@ -72,6 +88,7 @@ public class Settings {
         public static final Reflections DEFAULT_REFLECTIONS = new Reflections(ClasspathHelper.forJavaClassPath(),
                                                                               new ResourcesScanner());
 
+        private DeserializeMapper deserializeMapper;
         private FixtureScanner fixtureScanner;
         private FileNamingStrategy snapshotFileNamingStrategy;
         private FileNamingStrategy generatorFileNamingStrategy;
@@ -84,8 +101,14 @@ public class Settings {
             setDefaultObjectMapper();
             setDefaultSnapshotWriter();
             setDefaultFixtureScanner();
+            setDefaultDeserializeMapper();
             setSnapshotFileNamingStrategy(fileNamingStrategy);
             setGeneratorFileNamingStrategy(fileNamingStrategy);
+        }
+
+        public Builder setDeserializeMapper(DeserializeMapper deserializeMapper) {
+            this.deserializeMapper = deserializeMapper;
+            return this;
         }
 
         public Builder setDefaultObjectMapper() {
@@ -166,6 +189,11 @@ public class Settings {
 
         public Builder setSnapshotFolderPath(String snapshotFolderPath) {
             this.snapshotFixtureWriter = new StaticPathDefaultSnapshotWriter(snapshotFolderPath, objectMapper);
+            return this;
+        }
+
+        public Builder setDefaultDeserializeMapper() {
+            this.deserializeMapper = new JacksonDeserializer(objectMapper);
             return this;
         }
 

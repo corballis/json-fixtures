@@ -1,10 +1,5 @@
 package ie.corballis.fixtures.assertion;
 
-import ie.corballis.fixtures.annotation.Fixture;
-import ie.corballis.fixtures.annotation.FixtureAnnotations;
-import ie.corballis.fixtures.core.MyBean;
-import ie.corballis.fixtures.io.write.SnapshotFixtureWriter;
-import ie.corballis.fixtures.settings.Settings;
 import org.apache.commons.io.FileUtils;
 import org.fest.assertions.api.Assertions;
 import org.junit.Before;
@@ -19,10 +14,16 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import ie.corballis.fixtures.annotation.Fixture;
+import ie.corballis.fixtures.annotation.FixtureAnnotations;
+import ie.corballis.fixtures.core.MyBean;
+import ie.corballis.fixtures.io.write.SnapshotFixtureWriter;
+import ie.corballis.fixtures.settings.Settings;
+
 import static com.google.common.collect.Lists.newArrayList;
+import static ie.corballis.fixtures.util.StringUtils.unifyLineEndings;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static ie.corballis.fixtures.util.StringUtils.unifyLineEndings;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -148,7 +149,7 @@ public class FixtureAssertTest {
     public void toMatchSnapshotShouldGenerateNewFileForFirstTime() throws IOException {
         FixtureAssert.assertThat(bean).toMatchSnapshot();
         verify(snapshotFixtureWriter, times(1)).write(getClass(),
-                                                      "toMatchSnapshotShouldGenerateNewFileForFirstTime-1",
-                                                      bean);
+                "toMatchSnapshotShouldGenerateNewFileForFirstTime-1",
+                bean);
     }
 }
