@@ -12,10 +12,10 @@ import org.reflections.util.ClasspathHelper;
 import ie.corballis.fixtures.core.BeanFactory;
 import ie.corballis.fixtures.core.JacksonDeserializer;
 import ie.corballis.fixtures.io.DeserializeMapper;
-import ie.corballis.fixtures.io.scanner.ClassPathFixtureScanner;
 import ie.corballis.fixtures.io.scanner.CompositeFixtureScanner;
 import ie.corballis.fixtures.io.scanner.FixtureScanner;
 import ie.corballis.fixtures.io.scanner.FolderFixtureScanner;
+import ie.corballis.fixtures.io.scanner.ResourceRootFixtureScanner;
 import ie.corballis.fixtures.io.scanner.TestFileNameFixtureScanner;
 import ie.corballis.fixtures.io.write.DefaultSnapshotWriter;
 import ie.corballis.fixtures.io.write.FileNamingStrategy;
@@ -131,7 +131,7 @@ public class Settings {
         }
 
         public Builder setDefaultFixtureScanner() {
-            return setFixtureScanner(new ClassPathFixtureScanner(getReflections()));
+            return setFixtureScanner(new ResourceRootFixtureScanner());
         }
 
         public Builder setFixtureScanner(FixtureScanner fixtureScanner) {
@@ -198,7 +198,11 @@ public class Settings {
         }
 
         public Builder useTestFileNameFixtureScanner(Class testClass) {
-            return setFixtureScanner(new TestFileNameFixtureScanner(testClass, getReflections()));
+            return setFixtureScanner(new TestFileNameFixtureScanner(testClass));
+        }
+
+        public Builder useTestFolderFixture(Class testClass) {
+            return setFixtureScanner(new FolderFixtureScanner(testClass));
         }
 
         public Builder useFolderFixtureScanner(Class testClass) {

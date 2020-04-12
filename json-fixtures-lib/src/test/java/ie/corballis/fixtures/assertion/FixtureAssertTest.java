@@ -17,6 +17,7 @@ import java.net.URISyntaxException;
 import ie.corballis.fixtures.annotation.Fixture;
 import ie.corballis.fixtures.annotation.FixtureAnnotations;
 import ie.corballis.fixtures.core.MyBean;
+import ie.corballis.fixtures.io.scanner.FileFixtureScanner;
 import ie.corballis.fixtures.io.write.SnapshotFixtureWriter;
 import ie.corballis.fixtures.settings.Settings;
 
@@ -140,7 +141,7 @@ public class FixtureAssertTest {
     }
 
     private void assertFailureMessage(ComparisonFailure e, String relativePath) throws URISyntaxException, IOException {
-        URI uri = getClass().getClassLoader().getResource(relativePath).toURI();
+        URI uri = new FileFixtureScanner(getClass(), relativePath).collectResources().get(0).getURI();
         String expectedMessage = FileUtils.readFileToString(new File(uri));
         Assertions.assertThat(unifyLineEndings(e.getMessage())).isEqualTo(unifyLineEndings(expectedMessage));
     }

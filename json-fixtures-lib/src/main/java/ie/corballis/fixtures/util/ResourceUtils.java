@@ -17,7 +17,7 @@ public class ResourceUtils {
 
     public static String getResourceFilePath(Class c) {
         String path = System.getProperty("user.dir") + "/src/test/resources/fixtures/"
-                + c.getPackage().getName().replace(".", "/");
+                + c.getPackage().getName().replace(".", "/") + "/";
         createIfNotExist(path);
         return path;
     }

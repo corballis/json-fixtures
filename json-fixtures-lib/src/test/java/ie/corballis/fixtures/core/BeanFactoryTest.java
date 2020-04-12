@@ -2,13 +2,15 @@ package ie.corballis.fixtures.core;
 
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.SimpleType;
-import ie.corballis.fixtures.io.ClassPathResource;
-import ie.corballis.fixtures.io.DefaultFixtureReader;
-import ie.corballis.fixtures.settings.Settings;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
+
+import ie.corballis.fixtures.io.DefaultFixtureReader;
+import ie.corballis.fixtures.io.scanner.FileFixtureScanner;
+import ie.corballis.fixtures.settings.Settings;
 
 import static ie.corballis.fixtures.settings.SettingsHolder.settings;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -22,9 +24,9 @@ public class BeanFactoryTest {
     @Before
     public void setUp() throws Exception {
         factory = new BeanFactory(Settings.Builder.defaultObjectMapper(), settings().getFixtureScanner());
-        ClassPathResource resource = new ClassPathResource("test2.fixtures.json");
+        FileFixtureScanner resource = new FileFixtureScanner(getClass(), "test2.fixtures.json");
         DefaultFixtureReader reader = new DefaultFixtureReader();
-        factory.registerAll(reader.read(resource));
+        factory.registerAll(reader.read(resource.collectResource()));
     }
 
     @Test

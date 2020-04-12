@@ -3,12 +3,7 @@ package ie.corballis.fixtures.assertion;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import ie.corballis.fixtures.annotation.Fixture;
-import ie.corballis.fixtures.annotation.FixtureAnnotations;
-import ie.corballis.fixtures.references.Entity;
-import ie.corballis.fixtures.references.Owner;
-import ie.corballis.fixtures.references.Person;
-import ie.corballis.fixtures.settings.Settings;
+
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.core.IsAnything;
@@ -24,9 +19,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ie.corballis.fixtures.annotation.Fixture;
+import ie.corballis.fixtures.annotation.FixtureAnnotations;
+import ie.corballis.fixtures.references.Entity;
+import ie.corballis.fixtures.references.Owner;
+import ie.corballis.fixtures.references.Person;
+import ie.corballis.fixtures.settings.Settings;
+
 import static ie.corballis.fixtures.assertion.PropertyMatchers.overriddenMatchers;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.anything;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.isEmptyString;
 
 public class PropertyMatchersTest {
 
@@ -45,14 +49,17 @@ public class PropertyMatchersTest {
     public void setUp() throws Exception {
         ObjectMapper objectMapper = Settings.Builder.defaultObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        FixtureAnnotations.initFixtures(this, new Settings.Builder().setObjectMapper(objectMapper));
+        FixtureAnnotations.initFixtures(this,
+                new Settings.Builder()
+                        .setObjectMapper(objectMapper).useTestFolderFixture(getClass())
+        );
     }
 
     @Test
     public void multipleNestedProperties() throws IOException {
         FixtureAssert.assertThat(testMap)
-                     .matchesExactlyWithStrictOrder(overriddenMatchers("b.a", anything(), "x.a.b", equalTo(1)),
-                                                    "testMapExpected");
+                .matchesExactlyWithStrictOrder(overriddenMatchers("b.a", anything(), "x.a.b", equalTo(1)),
+                        "testMapExpected");
     }
 
     @Test
@@ -70,22 +77,22 @@ public class PropertyMatchersTest {
         AtomicBoolean matcherCalled = new AtomicBoolean();
 
         FixtureAssert.assertThat(new Entity(10, LocalDateTime.now()))
-                     .matchesExactly(overriddenMatchers("createdAt", new BaseMatcher<LocalDateTime>() {
+                .matchesExactly(overriddenMatchers("createdAt", new BaseMatcher<LocalDateTime>() {
 
-                         @Override
-                         public boolean matches(Object item) {
-                             matcherCalled.set(true);
-                             LocalDateTime actual = LocalDateTime.parse(String.valueOf(item));
+                    @Override
+                    public boolean matches(Object item) {
+                        matcherCalled.set(true);
+                        LocalDateTime actual = LocalDateTime.parse(String.valueOf(item));
 
-                             LocalDateTime before = actual.minusMinutes(1);
-                             LocalDateTime after = actual.plusMinutes(1);
-                             return actual.isBefore(after) && actual.isAfter(before);
-                         }
+                        LocalDateTime before = actual.minusMinutes(1);
+                        LocalDateTime after = actual.plusMinutes(1);
+                        return actual.isBefore(after) && actual.isAfter(before);
+                    }
 
-                         @Override
-                         public void describeTo(Description description) {
-                         }
-                     }), "customMatcherShouldBeAccepted-result");
+                    @Override
+                    public void describeTo(Description description) {
+                    }
+                }), "customMatcherShouldBeAccepted-result");
 
         assertThat(matcherCalled.get()).isTrue();
     }
@@ -128,15 +135,15 @@ public class PropertyMatchersTest {
         assertThat(matchers.getMatcher("a")).isExactlyInstanceOf(IsEmptyString.class);
 
         matchers = overriddenMatchers("x",
-                                      anything(),
-                                      "y",
-                                      isEmptyString(),
-                                      "z",
-                                      anything(),
-                                      "a",
-                                      isEmptyString(),
-                                      "b",
-                                      isEmptyString());
+                anything(),
+                "y",
+                isEmptyString(),
+                "z",
+                anything(),
+                "a",
+                isEmptyString(),
+                "b",
+                isEmptyString());
         assertThat(matchers.getProperties()).containsOnly("x", "y", "z", "a", "b");
         assertThat(matchers.getMatcher("x")).isExactlyInstanceOf(IsAnything.class);
         assertThat(matchers.getMatcher("y")).isExactlyInstanceOf(IsEmptyString.class);
@@ -145,17 +152,17 @@ public class PropertyMatchersTest {
         assertThat(matchers.getMatcher("b")).isExactlyInstanceOf(IsEmptyString.class);
 
         matchers = overriddenMatchers("x",
-                                      anything(),
-                                      "y",
-                                      isEmptyString(),
-                                      "z",
-                                      anything(),
-                                      "a",
-                                      isEmptyString(),
-                                      "b",
-                                      isEmptyString(),
-                                      "c",
-                                      anything());
+                anything(),
+                "y",
+                isEmptyString(),
+                "z",
+                anything(),
+                "a",
+                isEmptyString(),
+                "b",
+                isEmptyString(),
+                "c",
+                anything());
         assertThat(matchers.getProperties()).containsOnly("x", "y", "z", "a", "b", "c");
         assertThat(matchers.getMatcher("x")).isExactlyInstanceOf(IsAnything.class);
         assertThat(matchers.getMatcher("y")).isExactlyInstanceOf(IsEmptyString.class);
@@ -169,34 +176,34 @@ public class PropertyMatchersTest {
     @Test
     public void propertyMatcherArgumentsShouldBeValid() {
         expectedException.expectMessage(
-            "Matchers are not defined correctly, you must set the matchers after the property definition. " +
-            "e.g.: \"id\", Matchers.any(), \"createdAt\", Matchers.any()");
+                "Matchers are not defined correctly, you must set the matchers after the property definition. " +
+                        "e.g.: \"id\", Matchers.any(), \"createdAt\", Matchers.any()");
 
         overriddenMatchers("x",
-                           anything(),
-                           "y",
-                           isEmptyString(),
-                           "z",
-                           anything(),
-                           "a",
-                           isEmptyString(),
-                           "b",
-                           isEmptyString(),
-                           anything(),
-                           "c");
+                anything(),
+                "y",
+                isEmptyString(),
+                "z",
+                anything(),
+                "a",
+                isEmptyString(),
+                "b",
+                isEmptyString(),
+                anything(),
+                "c");
     }
 
     @Test
     public void matchesShouldAcceptMatchers() throws Exception {
         FixtureAssert.assertThat(person1)
-                     .matches(overriddenMatchers("age", equalTo(1)), "matchesShouldAcceptMatchers-1");
+                .matches(overriddenMatchers("age", equalTo(1)), "matchesShouldAcceptMatchers-1");
     }
 
     @Test
     public void matchesWithStrictOrderShouldAcceptMatchers() throws JsonProcessingException {
         FixtureAssert.assertThat(testMap)
-                     .matchesWithStrictOrder(overriddenMatchers("a", equalTo("a1")),
-                                             "matchesWithStrictOrderShouldAcceptMatchers-result");
+                .matchesWithStrictOrder(overriddenMatchers("a", equalTo("a1")),
+                        "matchesWithStrictOrderShouldAcceptMatchers-result");
     }
 
     @Test
