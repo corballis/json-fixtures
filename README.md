@@ -698,7 +698,7 @@ This is a really silly example, because it accepts any `Integer` and `LocalDateT
 ### Nested object matching
 
 You can easily find yourself in a situation, when you have a complex object tree and you don't want to take care of all the frequently changing properties in every object in the tree.
-You can face with similar case when you use JPA entities with joined tables. 
+You can face a similar situation when you use JPA entities with joined tables. 
 As an example let's have a `Person` entity which has a `Dog`. 
 The `Person` and the `Dog` can both have properties like `id` or `createdAt`...and so on. 
 Moreover the `Dog` can join other entities too. 
