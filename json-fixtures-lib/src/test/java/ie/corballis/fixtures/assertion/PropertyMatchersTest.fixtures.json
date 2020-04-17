@@ -194,10 +194,6 @@
     "age": 1,
     "cars": []
   },
-  "shouldFailWhenNestedPropertyMatcherCannotIsNotTheSameClassAsExpected-1": {
-    "age": 1,
-    "cars": []
-  },
   "propertyMatchersShouldNotMatchWithNestedObject-1": {
     "age": 1,
     "cars": []
@@ -269,5 +265,9 @@
       ],
       "f": "g"
     }
+  },
+  "shouldFailWhenNestedPropertyMatcherIsNotTheSameClassAsExpected-1": {
+    "age": 1,
+    "cars": []
   }
 }

@@ -99,7 +99,7 @@ public class PropertyMatchersTest {
     }
 
     @Test
-    public void shouldFailWhenNestedPropertyMatcherCannotIsNotTheSameClassAsExpected() throws IOException {
+    public void shouldFailWhenNestedPropertyMatcherIsNotTheSameClassAsExpected() throws IOException {
         expectedException.expectMessage("Cannot convert actual value to [Person] instance. " +
                                         "Make sure that the nested entity is an instance of Person");
         FixtureAssert.assertThat(person1)
