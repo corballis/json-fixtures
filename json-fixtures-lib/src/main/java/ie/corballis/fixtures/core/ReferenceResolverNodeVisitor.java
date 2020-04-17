@@ -2,11 +2,13 @@ package ie.corballis.fixtures.core;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import ie.corballis.fixtures.util.JsonNodeVisitor;
+import ie.corballis.fixtures.util.VisitedValue;
 
 import java.util.Stack;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static ie.corballis.fixtures.util.JsonUtils.*;
+import static ie.corballis.fixtures.util.VisitedValue.valueOf;
 
 public class ReferenceResolverNodeVisitor implements JsonNodeVisitor {
 
@@ -23,15 +25,17 @@ public class ReferenceResolverNodeVisitor implements JsonNodeVisitor {
     }
 
     @Override
-    public Object visitElement(JsonNode original, Object newObject, Stack<Object> path) {
+    public VisitedValue visitElement(JsonNode original, Object newObject, Stack<Object> path) {
         Object append;
         if (original.isTextual()) {
             String value = original.textValue();
             path.push(value);
             if (value.startsWith(referencePrefix)) {
                 validateReference(original, path, referencePrefix);
-                append =
-                    visitElements(referenceResolver.getReferenceNode(original, referencePrefix), newObject, path, this);
+                append = visitElements(referenceResolver.getReferenceNode(original, referencePrefix),
+                                       newObject,
+                                       path,
+                                       this);
             } else {
                 append = getPrimitiveValue(original);
             }
@@ -40,7 +44,7 @@ public class ReferenceResolverNodeVisitor implements JsonNodeVisitor {
             append = getPrimitiveValue(original);
         }
 
-        return append;
+        return valueOf(append);
     }
 
     private void validateReference(JsonNode node, Stack<Object> path, String referencePrefix) {
@@ -49,23 +53,31 @@ public class ReferenceResolverNodeVisitor implements JsonNodeVisitor {
     }
 
     private void validateReference(Stack<Object> path, String referencePrefix, String[] referenceParts) {
-        String helpText =
-            "Every string value starting with " + referencePrefix + " is considered as fixture reference. " +
-            "If you would like to refer to a fixture, please provide a valid fixture name after " + referencePrefix +
-            ", otherwise if you have a non-referring string starting with " + referencePrefix +
-            " then change the default prefix in @Fixture annotation";
+        String helpText = "Every string value starting with " +
+                          referencePrefix +
+                          " is considered as fixture reference. " +
+                          "If you would like to refer to a fixture, please provide a valid fixture name after " +
+                          referencePrefix +
+                          ", otherwise if you have a non-referring string starting with " +
+                          referencePrefix +
+                          " then change the default prefix in @Fixture annotation";
         checkArgument(referenceParts.length == 2,
-                      "Fixture reference value detected without fixture name in " + pathToReferenceChain(path) +
-                      " property. " + helpText);
+                      "Fixture reference value detected without fixture name in " +
+                      pathToReferenceChain(path) +
+                      " property. " +
+                      helpText);
         String fixtureName = referenceParts[1];
 
         beanFactory.getFixtureAsJsonNode(fixtureName)
                    .orElseThrow(() -> new IllegalArgumentException(
-                       "Fixture reference value detected without existing fixture in " + pathToReferenceChain(path) +
-                       " property. " + helpText));
+                       "Fixture reference value detected without existing fixture in " +
+                       pathToReferenceChain(path) +
+                       " property. " +
+                       helpText));
 
         boolean hasNoCircularDependency = path.indexOf(referencePrefix + fixtureName) == (path.size() - 1);
         checkArgument(hasNoCircularDependency,
                       "Circular dependency detected between references: " + pathToReferenceChain(path));
     }
+
 }

@@ -12,6 +12,7 @@ import java.util.Stack;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newLinkedHashMap;
+import static ie.corballis.fixtures.util.VisitedValue.valueOf;
 
 public class JsonUtils {
 
@@ -38,41 +39,60 @@ public class JsonUtils {
     }
 
     public static Object visitElements(JsonNode original, JsonNodeVisitor visitor) {
-        return visitElements(original, newHashMap(), new Stack<>(), visitor);
+        return visitElementsInternal(original, newHashMap(), new Stack<>(), visitor).getValue();
     }
 
     public static Object visitElements(JsonNode original,
                                        Object newObject,
                                        Stack<Object> path,
                                        JsonNodeVisitor visitor) {
+        return visitElementsInternal(original, newObject, path, visitor).getValue();
+    }
+
+    private static VisitedValue visitElementsInternal(JsonNode original,
+                                                      Object newObject,
+                                                      Stack<Object> path,
+                                                      JsonNodeVisitor visitor) {
         if (original.isObject()) {
             Iterator<String> fieldNames = original.fieldNames();
             HashMap<Object, Object> nested = newLinkedHashMap();
+
+            VisitedValue object = visitor.visitObject(original, path);
+            if (object != null) {
+                return object;
+            }
+
             while (fieldNames.hasNext()) {
                 String fieldName = fieldNames.next();
                 path.push(fieldName);
 
                 JsonNode childNode = original.get(fieldName);
-                Object value = visitElements(childNode, nested, path, visitor);
-                if (value != JsonNodeVisitor.AppendMode.NONE) {
-                    nested.put(fieldName, value);
+                VisitedValue value = visitElementsInternal(childNode, nested, path, visitor);
+                if (value.isAppendToResult()) {
+                    nested.put(fieldName, value.getValue());
                 }
                 path.pop();
             }
 
-            return nested;
+            return valueOf(nested);
         } else if (original.isArray()) {
             List<Object> nestedList = newArrayList();
+
+            VisitedValue object = visitor.visitList(original, path);
+            if (object != null) {
+                return object;
+            }
+
             for (int i = 0; i < original.size(); i++) {
                 path.push(i);
-                Object value = visitElements(original.get(i), nestedList, path, visitor);
-                if (value != JsonNodeVisitor.AppendMode.NONE) {
-                    nestedList.add(value);
+                VisitedValue value = visitElementsInternal(original.get(i), nestedList, path, visitor);
+                if (value.isAppendToResult()) {
+                    nestedList.add(value.getValue());
                 }
                 path.pop();
             }
 
-            return nestedList;
+            return valueOf(nestedList);
         } else {
             return visitor.visitElement(original, newObject, path);
         }

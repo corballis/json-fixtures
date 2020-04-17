@@ -189,5 +189,85 @@
         }
       ]
     }
-  ]
+  ],
+  "propertyMatchersShouldMatchToNestedObjects-1": {
+    "age": 1,
+    "cars": []
+  },
+  "shouldFailWhenNestedPropertyMatcherCannotIsNotTheSameClassAsExpected-1": {
+    "age": 1,
+    "cars": []
+  },
+  "propertyMatchersShouldNotMatchWithNestedObject-1": {
+    "age": 1,
+    "cars": []
+  },
+  "nestedPropertyMatcherMustBeUsedToNestedObjects-1": {
+    "age": 1,
+    "cars": []
+  },
+  "propertyMatchersShouldMatchToDeeperNestedObjects-1": {
+    "a": "a1",
+    "b": [
+      [
+        {
+          "a": "a2",
+          "c": "c1",
+          "d": "d1"
+        },
+        {
+          "a": "a3",
+          "c": "c2",
+          "d": "d2"
+        }
+      ],
+      [
+        {
+          "a": "a4",
+          "c": "c3",
+          "d": "d4"
+        }
+      ]
+    ],
+    "x": {
+      "y": [
+        1,
+        2,
+        3
+      ],
+      "f": "g"
+    }
+  },
+  "propertyMatchersShouldMatchToDeeperNestedObjectsWithCustomMatcher-1": {
+    "a": "a1",
+    "b": [
+      [
+        {
+          "a": "a2",
+          "c": "c1",
+          "d": "d1"
+        },
+        {
+          "a": "a3",
+          "c": "c2",
+          "d": "d2"
+        }
+      ],
+      [
+        {
+          "a": "a4",
+          "c": "c3",
+          "d": "d4"
+        }
+      ]
+    ],
+    "x": {
+      "y": [
+        1,
+        2,
+        3
+      ],
+      "f": "g"
+    }
+  }
 }
