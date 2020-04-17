@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import ie.corballis.fixtures.annotation.Fixture;
 import ie.corballis.fixtures.annotation.FixtureAnnotations;
+import ie.corballis.fixtures.references.Dog;
 import ie.corballis.fixtures.references.Entity;
 import ie.corballis.fixtures.references.Owner;
 import ie.corballis.fixtures.references.Person;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static ie.corballis.fixtures.assertion.PropertyMatchers.overriddenMatchers;
+import static ie.corballis.fixtures.assertion.matcher.NestedObjectMatcher.nested;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -53,6 +55,56 @@ public class PropertyMatchersTest {
         FixtureAssert.assertThat(testMap)
                      .matchesExactlyWithStrictOrder(overriddenMatchers("b.a", anything(), "x.a.b", equalTo(1)),
                                                     "testMapExpected");
+    }
+
+    @Test
+    public void propertyMatchersShouldMatchToDeeperNestedObjectsWithCustomMatcher() throws IOException {
+        FixtureAssert.assertThat(testMap)
+                     .toMatchSnapshotExactly(overriddenMatchers("x.a", nested(new BaseMatcher<Map>() {
+                         @Override
+                         public boolean matches(Object item) {
+                             Map<String, Object> expected = (Map<String, Object>) item;
+                             return equalTo(Integer.valueOf(String.valueOf(expected.get("b")))).matches(1);
+                         }
+
+                         @Override
+                         public void describeTo(Description description) {
+
+                         }
+                     }, Map.class)));
+    }
+
+    @Test
+    public void propertyMatchersShouldMatchToNestedObjects() throws IOException {
+        FixtureAssert.assertThat(person1)
+                     .toMatchSnapshotExactlyWithStrictOrder(overriddenMatchers("dog",
+                                                                               nested(equalTo(person1.getDog()),
+                                                                                      Dog.class)));
+    }
+
+    @Test
+    public void nestedPropertyMatcherMustBeUsedToNestedObjects() throws IOException {
+        expectedException.expectMessage("Property 'dog' is an object. In order to use matchers with an object, " +
+                                        "you must wrap that in a nested matcher. e.g: nested(equalTo(...), ClassOfNestedObject.class)");
+        FixtureAssert.assertThat(person1)
+                     .toMatchSnapshotExactlyWithStrictOrder(overriddenMatchers("dog", equalTo(person1.getDog())));
+    }
+
+    @Test
+    public void propertyMatchersShouldNotMatchWithNestedObject() throws IOException {
+        expectedException.expectMessage("Property 'dog' did not match with the PropertyMatcher you provided.");
+        FixtureAssert.assertThat(person1)
+                     .toMatchSnapshotExactlyWithStrictOrder(overriddenMatchers("dog",
+                                                                               nested(equalTo(new Dog()), Dog.class)));
+    }
+
+    @Test
+    public void shouldFailWhenNestedPropertyMatcherIsNotTheSameClassAsExpected() throws IOException {
+        expectedException.expectMessage("Cannot convert actual value to [Person] instance. " +
+                                        "Make sure that the nested entity is an instance of Person");
+        FixtureAssert.assertThat(person1)
+                     .toMatchSnapshotExactlyWithStrictOrder(overriddenMatchers("dog",
+                                                                               nested(equalTo(person1), Person.class)));
     }
 
     @Test
@@ -208,4 +260,5 @@ public class PropertyMatchersTest {
     public void toMatchSnapshotWithStrictOrderShouldAcceptMatchers() throws IOException {
         FixtureAssert.assertThat(testMap).toMatchSnapshotWithStrictOrder(overriddenMatchers("a", equalTo("a1")));
     }
+
 }

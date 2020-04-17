@@ -695,11 +695,37 @@ You can use the static helpers of the `PropertyMatchers` class to set your custo
 
 This is a really silly example, because it accepts any `Integer` and `LocalDateTime` values. This doesn't really test anything, but keep in mind that you can write any `Matcher` class which extends from `org.hamcrest.Matcher`. Beside this, there are plenty of built in `Matchers` that you can use (Check the static helpers of `org.hamcrest.Matchers` class). Most of the time these will cover the regular use cases. You can see more examples in [PropertyMatcherTest](https://github.com/corballis/json-fixtures/blob/master/json-fixtures-lib/src/test/java/ie/corballis/fixtures/assertion/PropertyMatchersTest.java).
 
-**NOTE**: Currently you can write custom matchers for simple properties like Strings, Integers...etc. Matching of objects and lists are **not supported** yet. If you need anything like this, feel free to contribute. 
+### Nested object matching
+
+You can easily find yourself in a situation, when you have a complex object tree and you don't want to take care of all the frequently changing properties in every object in the tree.
+You can face a similar situation when you use JPA entities with joined tables. 
+As an example let's have a `Person` entity which has a `Dog`. 
+The `Person` and the `Dog` can both have properties like `id` or `createdAt`...and so on. 
+Moreover the `Dog` can join other entities too. 
+When you test only the `Person`'s logic, you probably don't want to override all the frequently changing properties of the other deeper objects.
+In most cases you only want to know that the `Dog` entity is the same as you assigned to the `Person`.
+The good news is that `PropertyMatchers` feature now supports nested object matching.
+
+```java
+    ...
+    private Dog myPersistedDog;
+    // look up the dog which must be assigned to the our person
+    ...
+
+    @Test
+    public void myTest() throws IOException {
+        FixtureAssert.assertThat(person)
+                     .toMatchSnapshotExactly(overriddenMatchers("dog", nested(equalTo(myPersistedDog),
+                                                                                      Dog.class)));
+    }
+```
+
+The only restriction to use matchers for nested objects is to wrap your matcher with a `NestedObjectMatcher` and provide a class of that object.
+So that we can make the type conversion for you and apply the matcher you want to use.
 
 ### Nested property matching
 
-We support property matching in nested objects too. You only need to describe the path of the property (separated by dots) to be handled differently:
+If you don't want to write matchers for a complete object, we support property matching in nested objects too. You only need to describe the path of the property (separated by dots) to be handled differently:
 ```java
 @Test
 public void myTest() throws IOException {

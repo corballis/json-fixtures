@@ -6,9 +6,14 @@ import java.util.Stack;
 
 public interface JsonNodeVisitor {
 
-    enum AppendMode {
-        NONE
+    VisitedValue visitElement(JsonNode original, Object newObject, Stack<Object> path);
+
+    default VisitedValue visitList(JsonNode original, Stack<Object> path) {
+        return null;
     }
 
-    Object visitElement(JsonNode original, Object newObject, Stack<Object> path);
+    default VisitedValue visitObject(JsonNode original, Stack<Object> path) {
+        return null;
+    }
+
 }

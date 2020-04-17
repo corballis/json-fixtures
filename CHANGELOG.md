@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2020-04-17
+### Added
+- `PropertyMatchers` can be used to match not just properties with simple types but nested objects as well.
+- Some built-in `PropertyMatchers` are provided by the library:
+    - `UuidMatcher`: Can detect that a property is a valid UUID string.
+    - `NestedObjectMatcher`: Can be used to wrap other matchers for checking nested objects (see more in readme).
+    - `ZonedDateTimeEqualsInUtcMatcher`: A useful matcher to compare `java.time.ZonedDateTime` instances without taking care of the zones. It can be useful when the tests are executed in different time zones (e.g.: on a CI machine at different location). 
+
 ## [2.1.4] - 2019-10-16
 ### Fixed
 - Every instantiation of `Reflections` class scans the full java classpath to initialize its internal cache. 
