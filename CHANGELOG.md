@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2020-04-21
+### BREAKING CHANGES
+- `FixtureAssert` has a built-in validation which verifies that all the overridden properties exists in the current object. 
+With this strictness, developers can be sure that all the matchers they provided will be matching valid properties of the original object, 
+so they can't make no-op matchers believing that it works as expected.
+### Fixed
+- `FixtureAssert` now compares expected and actual values excluding the overridden properties.
+
 ## [2.2.0] - 2020-04-17
 ### Added
 - `PropertyMatchers` can be used to match not just properties with simple types but nested objects as well.
