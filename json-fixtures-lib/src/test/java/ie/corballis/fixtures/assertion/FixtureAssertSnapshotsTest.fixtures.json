@@ -151,5 +151,9 @@
     "intProperty": 1,
     "listProperty": null,
     "nested": null
+  },
+  "assertionShouldNotDisplayOverriddenProperties-1": {
+    "stringProperty": "property2",
+    "nested": null
   }
 }

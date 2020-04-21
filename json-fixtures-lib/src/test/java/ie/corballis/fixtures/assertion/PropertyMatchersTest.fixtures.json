@@ -269,5 +269,14 @@
   "shouldFailWhenNestedPropertyMatcherIsNotTheSameClassAsExpected-1": {
     "age": 1,
     "cars": []
+  },
+  "shouldFailWhenPropertyNotFoundInActualEntity-1": {
+    "age": 1,
+    "dog": {
+      "name": "XXX",
+      "age": 3.23,
+      "breed": "labrador"
+    },
+    "cars": []
   }
 }

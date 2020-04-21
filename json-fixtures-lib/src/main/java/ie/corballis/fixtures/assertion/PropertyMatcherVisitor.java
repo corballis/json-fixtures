@@ -10,16 +10,26 @@ import static java.util.stream.Collectors.toList;
 public abstract class PropertyMatcherVisitor implements JsonNodeVisitor {
 
     protected final List<String> propertyChain;
+    private boolean matched;
 
     public PropertyMatcherVisitor(List<String> propertyChain) {
         this.propertyChain = propertyChain;
     }
 
     protected boolean isMatchingPath(Stack<Object> path) {
-        return convertToMatcherProperties(path).equals(propertyChain);
+        boolean matched = convertToMatcherProperties(path).equals(propertyChain);
+        if (matched) {
+            this.matched = true;
+        }
+        return matched;
     }
 
     protected List<Object> convertToMatcherProperties(Stack<Object> stack) {
         return stack.stream().filter(value -> value instanceof String).collect(toList());
     }
+
+    public boolean isMatched() {
+        return matched;
+    }
+
 }

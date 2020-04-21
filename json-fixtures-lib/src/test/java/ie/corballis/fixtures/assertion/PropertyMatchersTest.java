@@ -91,6 +91,32 @@ public class PropertyMatchersTest {
     }
 
     @Test
+    public void shouldFailWhenPropertyNotFoundInActualEntity() throws IOException {
+        expectedException.expectMessage("The following properties [cat, createdBy] could not be found in Person. " +
+                                        "Please check that you provided the correct path to the property you want to match with.");
+        FixtureAssert.assertThat(person1)
+                     .toMatchSnapshotExactlyWithStrictOrder(overriddenMatchers("cat",
+                                                                               any(Object.class),
+                                                                               "age",
+                                                                               anything(),
+                                                                               "createdBy",
+                                                                               anything()));
+    }
+
+    @Test
+    public void shouldFailWhenNestedPropertyNotFoundInActualEntity() throws IOException {
+        expectedException.expectMessage("The following properties [x.a.b.F] could not be found in LinkedHashMap. " +
+                                        "Please check that you provided the correct path to the property you want to match with.");
+        FixtureAssert.assertThat(testMap)
+                     .matchesExactlyWithStrictOrder(overriddenMatchers("b.a",
+                                                                       anything(),
+                                                                       "x.a.b",
+                                                                       equalTo(1),
+                                                                       "x.a.b.F",
+                                                                       anything()), "testMapExpected");
+    }
+
+    @Test
     public void propertyMatchersShouldNotMatchWithNestedObject() throws IOException {
         expectedException.expectMessage("Property 'dog' did not match with the PropertyMatcher you provided.");
         FixtureAssert.assertThat(person1)
@@ -148,11 +174,6 @@ public class PropertyMatchersTest {
         expectedException.expectMessage("Expected: <20>");
         expectedException.expectMessage("but: was <1>");
         FixtureAssert.assertThat(person1).matchesExactly(overriddenMatchers("age", equalTo(20)), "person1");
-    }
-
-    @Test
-    public void shouldNotFailWhenMatcherDoesNotExistForProperty() throws Exception {
-        FixtureAssert.assertThat(person1).matchesExactly(overriddenMatchers("dog.x", equalTo(20)), "person1");
     }
 
     @Test

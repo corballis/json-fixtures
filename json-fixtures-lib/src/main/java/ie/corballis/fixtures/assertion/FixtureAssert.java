@@ -9,6 +9,7 @@ import uk.co.datumedge.hamcrest.json.SameJSONAs;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Consumer;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static ie.corballis.fixtures.assertion.MatchingMode.*;
@@ -43,6 +44,7 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
 
         if (matchers.isEmpty()) {
             assertThatExpectedMatchesWithActual(expected,
+                                                actual,
                                                 settings().getObjectMapper().writeValueAsString(actual),
                                                 fixtures);
         } else {
@@ -52,18 +54,20 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
     }
 
     private void assertThatExpectedMatchesWithActual(SameJSONAs<String> expected,
+                                                     Object actual,
                                                      String actualJson,
                                                      String[] fixtures) throws JsonProcessingException {
         try {
             MatcherAssert.assertThat(actualJson, expected);
         } catch (AssertionError assertionError) {
-            failAndPrettyPrintError(assertionError, fixtures);
+            failAndPrettyPrintError(assertionError, actual, fixtures);
         }
     }
 
-    private void failAndPrettyPrintError(AssertionError assertionError, String[] fixtures) throws
-                                                                                           JsonProcessingException {
-        String actualPrettyString = unifyLineEndings(settings().getObjectMapper().writerWithDefaultPrettyPrinter()
+    private void failAndPrettyPrintError(AssertionError assertionError, Object actual, String[] fixtures) throws
+                                                                                                          JsonProcessingException {
+        String actualPrettyString = unifyLineEndings(settings().getObjectMapper()
+                                                               .writerWithDefaultPrettyPrinter()
                                                                .writeValueAsString(actual));
         String expectedPrettyString = unifyLineEndings(settings().getBeanFactory().createAsString(true, fixtures));
         System.err.print(assertionError.getMessage());
@@ -73,29 +77,46 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
     private void compareWithoutOverriddenProperties(MatchingMode matchingMode,
                                                     PropertyMatchers matchers,
                                                     String[] fixtures) throws JsonProcessingException {
-        Object clearedActual = removeOverriddenProperties(this.actual, matchers);
+        Object clearedActual = removeOverriddenProperties(this.actual, matchers, this::failWhenNoMatchingPropertyFound);
         Object clearedExpected = removeOverriddenProperties(settings().getBeanFactory()
                                                                       .create(getTypeToConvert(this.actual), fixtures),
                                                             matchers);
 
         String clearedActualString = settings().getObjectMapper().writeValueAsString(clearedActual);
-        SameJSONAs<String> expectedMatcher =
-            matchingMode.getJsonMatcher(settings().getObjectMapper().writeValueAsString(clearedExpected));
+        SameJSONAs<String> expectedMatcher = matchingMode.getJsonMatcher(settings().getObjectMapper()
+                                                                                   .writeValueAsString(clearedExpected));
 
-        assertThatExpectedMatchesWithActual(expectedMatcher, clearedActualString, fixtures);
+        assertThatExpectedMatchesWithActual(expectedMatcher, clearedActual, clearedActualString, fixtures);
     }
 
     private Object removeOverriddenProperties(Object entity, PropertyMatchers matchers) {
+        Consumer<List<String>> noopHandler = nonMatchingProperties -> {};
+        return removeOverriddenProperties(entity, matchers, noopHandler);
+    }
+
+    private Object removeOverriddenProperties(Object entity,
+                                              PropertyMatchers matchers,
+                                              Consumer<List<String>> nonMatchingPropertyHandler) {
         Set<String> properties = matchers.getProperties();
+        List<String> nonMatchingProperties = newArrayList();
 
         if (!matchers.isEmpty()) {
             Object newObject = settings().getObjectMapper().convertValue(entity, getTypeToConvert(entity));
             for (String property : properties) {
                 List<String> parts = newArrayList(property.split("\\."));
                 JsonNode updatedNode = settings().getObjectMapper().convertValue(newObject, JsonNode.class);
-                newObject =
-                    visitElements(updatedNode, newObject, new Stack<>(), new PropertyMatcherFilteringVisitor(parts));
+                PropertyMatcherFilteringVisitor filteringVisitor = new PropertyMatcherFilteringVisitor(parts);
+                newObject = visitElements(updatedNode, newObject, new Stack<>(), filteringVisitor);
+
+                if (!filteringVisitor.isMatched()) {
+                    nonMatchingProperties.add(property);
+                }
             }
+
+            if (!nonMatchingProperties.isEmpty()) {
+                nonMatchingPropertyHandler.accept(nonMatchingProperties);
+            }
+
             return newObject;
         }
 
@@ -104,6 +125,15 @@ public class FixtureAssert extends AbstractAssert<FixtureAssert, Object> {
 
     private Class<?> getTypeToConvert(Object entity) {
         return (entity.getClass().isArray() || entity instanceof Collection) ? List.class : Map.class;
+    }
+
+    private void failWhenNoMatchingPropertyFound(List<String> nonMatchingProperties) {
+        Collections.sort(nonMatchingProperties);
+        String failure = String.format("The following properties %s could not be found in %s. " +
+                                       "Please check that you provided the correct path to the property you want to match with.",
+                                       nonMatchingProperties,
+                                       this.actual.getClass().getSimpleName());
+        throw new IllegalArgumentException(failure);
     }
 
     private void verifyOverriddenPropertiesOnly(PropertyMatchers matchers) {
