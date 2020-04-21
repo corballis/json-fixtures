@@ -20,10 +20,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static ie.corballis.fixtures.util.StringUtils.unifyLineEndings;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static ie.corballis.fixtures.util.StringUtils.unifyLineEndings;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class FixtureAssertTest {
@@ -70,6 +69,12 @@ public class FixtureAssertTest {
             System.out.println(e.getMessage());
             assertFailureMessage(e, "expectedMessage1");
         }
+    }
+
+    private void assertFailureMessage(ComparisonFailure e, String relativePath) throws URISyntaxException, IOException {
+        URI uri = getClass().getClassLoader().getResource(relativePath).toURI();
+        String expectedMessage = FileUtils.readFileToString(new File(uri));
+        Assertions.assertThat(unifyLineEndings(e.getMessage())).isEqualTo(unifyLineEndings(expectedMessage));
     }
 
     @Test
@@ -127,7 +132,8 @@ public class FixtureAssertTest {
     public void matchesExactlyWithStrictOrder_doesNotAllowAnyOrdering() throws URISyntaxException, IOException {
         try {
             bean3.setListProperty(newArrayList("element2", "element1", "element3"));
-            FixtureAssert.assertThat(bean3).matchesExactlyWithStrictOrder("fixture1", "fixture2", "fixture3", "fixture5");
+            FixtureAssert.assertThat(bean3)
+                         .matchesExactlyWithStrictOrder("fixture1", "fixture2", "fixture3", "fixture5");
         } catch (ComparisonFailure e) {
             assertFailureMessage(e, "expectedMessage4");
         }
@@ -138,12 +144,6 @@ public class FixtureAssertTest {
         FixtureAssert.assertThat(bean3).matchesExactlyWithStrictOrder("fixture1", "fixture2", "fixture3", "fixture5");
     }
 
-    private void assertFailureMessage(ComparisonFailure e, String relativePath) throws URISyntaxException, IOException {
-        URI uri = getClass().getClassLoader().getResource(relativePath).toURI();
-        String expectedMessage = FileUtils.readFileToString(new File(uri));
-        Assertions.assertThat(unifyLineEndings(e.getMessage())).isEqualTo(unifyLineEndings(expectedMessage));
-    }
-
     @Test
     public void toMatchSnapshotShouldGenerateNewFileForFirstTime() throws IOException {
         FixtureAssert.assertThat(bean).toMatchSnapshot();
@@ -151,4 +151,5 @@ public class FixtureAssertTest {
                                                       "toMatchSnapshotShouldGenerateNewFileForFirstTime-1",
                                                       bean);
     }
+
 }

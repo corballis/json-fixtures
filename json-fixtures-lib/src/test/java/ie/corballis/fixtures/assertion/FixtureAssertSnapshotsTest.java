@@ -9,6 +9,7 @@ import ie.corballis.fixtures.io.write.SnapshotFixtureWriter;
 import ie.corballis.fixtures.settings.Settings;
 import org.apache.commons.io.FileUtils;
 import org.fest.assertions.api.Assertions;
+import org.hamcrest.Matchers;
 import org.junit.ComparisonFailure;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +22,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static ie.corballis.fixtures.assertion.FixtureAssert.assertThat;
+import static ie.corballis.fixtures.assertion.PropertyMatchers.overriddenMatchers;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -150,6 +152,32 @@ public class FixtureAssertSnapshotsTest {
             assertThat(bean2).toMatchSnapshotExactly();
         } catch (ComparisonFailure e) {
             assertFailureMessage(e, "toMatchSnapshotExactlyShouldFailWhenExistingSnapshotChanged");
+            return;
+        }
+
+        Assertions.fail("Fixture assertion should have been failed");
+    }
+
+    @Test
+    public void assertionShouldNotDisplayOverriddenProperties() throws Exception {
+        init();
+
+        try {
+            assertThat(bean).toMatchSnapshotExactly(overriddenMatchers("intProperty",
+                                                                       Matchers.anything(),
+                                                                       "stringProperty",
+                                                                       Matchers.anything()));
+        } catch (ComparisonFailure e) {
+            assertFailureMessage(e, "assertionShouldNotDisplayOverriddenProperties");
+            Assertions.assertThat(e.getActual())
+                      .isEqualTo("'{\n" +
+                                 "  \"listProperty\": [\n" +
+                                 "    \"element1\",\n" +
+                                 "    \"element2\",\n" +
+                                 "    \"element3\"\n" +
+                                 "  ],\n" +
+                                 "  \"nested\": null\n" +
+                                 "}'");
             return;
         }
 
