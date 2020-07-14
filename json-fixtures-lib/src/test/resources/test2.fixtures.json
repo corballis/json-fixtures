@@ -39,5 +39,12 @@
         "stringProperty": "property3",
         "intProperty": 3
       }
+    ],
+
+    "fixture7": [
+      {
+        "stringProperty": "property4",
+        "intProperty": 4
+      }
     ]
 }

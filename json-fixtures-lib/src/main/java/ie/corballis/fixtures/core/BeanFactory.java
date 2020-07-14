@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Joiner;
 import com.google.common.cache.Cache;
@@ -168,6 +169,11 @@ public class BeanFactory {
 
     private static JsonNode merge(JsonNode targetNode, JsonNode sourceNode) {
         Iterator<String> fieldNames = sourceNode.fieldNames();
+        if (!fieldNames.hasNext() && sourceNode.isArray() && !targetNode.fieldNames().hasNext() && targetNode.isArray()) {
+            if (targetNode instanceof ArrayNode) {
+                ((ArrayNode) targetNode).addAll( (ArrayNode)sourceNode );
+            }
+        }
         while (fieldNames.hasNext()) {
             String fieldName = fieldNames.next();
             JsonNode jsonNode = targetNode.get(fieldName);
