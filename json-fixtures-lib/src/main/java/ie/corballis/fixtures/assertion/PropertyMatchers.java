@@ -17,7 +17,7 @@ public class PropertyMatchers {
 
     private final Map<String, Matcher> matchers;
 
-    private PropertyMatchers(Map<String, Matcher> matchers) {
+    public PropertyMatchers(Map<String, Matcher> matchers) {
         this.matchers = ImmutableMap.copyOf(matchers);
     }
 
@@ -97,8 +97,11 @@ public class PropertyMatchers {
                       "you must set the matchers after the property definition." +
                       " e.g.: \"id\", Matchers.any(), \"createdAt\", Matchers.any()");
 
-        Set<Map.Entry<String, Matcher>> entries =
-            newHashSet(entryOf(p1, m1), entryOf(p2, m2), entryOf(p3, m3), entryOf(p4, m4), entryOf(p5, m5));
+        Set<Map.Entry<String, Matcher>> entries = newHashSet(entryOf(p1, m1),
+                                                             entryOf(p2, m2),
+                                                             entryOf(p3, m3),
+                                                             entryOf(p4, m4),
+                                                             entryOf(p5, m5));
         for (int i = 0; i < additionalMatchers.length; i = i + 2) {
             String property = String.valueOf(additionalMatchers[i]);
             Matcher matcher = (Matcher) additionalMatchers[i + 1];
