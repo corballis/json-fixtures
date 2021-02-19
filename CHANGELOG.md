@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2021-02-19
+### Added
+- `PropertyMatchers` can be initialized with a Map of matchers
+
 ## [3.0.0] - 2020-04-21
 ### BREAKING CHANGES
 - `FixtureAssert` has a built-in validation which verifies that all the overridden properties exists in the current object. 
