@@ -20,7 +20,7 @@ To set up the library in a Java project, copy the following XML node, and paste 
 <dependency>
 	<groupId>ie.corballis</groupId>
 	<artifactId>json-fixtures-lib</artifactId>
-	<version>3.0.0</version>
+	<version>3.2.0</version>
 </dependency>
 ```
 From this time on, you can use the classes provided by the library.

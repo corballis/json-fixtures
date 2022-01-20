@@ -1,13 +1,15 @@
 package ie.corballis.fixtures.util;
 
-import org.junit.Test;
-
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import static ie.corballis.fixtures.core.InvocationContextHolder.getTestExecutorThread;
 
 public class ClassUtils {
+
+    private static final String JUNIT4_TEST = "org.junit.Test";
+    private static final String JUNIT5_TEST = "org.junit.jupiter.api.Test";
+    private static final String[] TEST_ANNOTATIONS = {JUNIT4_TEST, JUNIT5_TEST};
 
     public static ClassLoader getDefaultClassLoader() {
         ClassLoader cl = null;
@@ -37,7 +39,10 @@ public class ClassUtils {
         try {
             Class<?> stackTraceClass = Class.forName(stackTraceElement.getClassName());
             Method declaredMethod = stackTraceClass.getDeclaredMethod(stackTraceElement.getMethodName());
-            return declaredMethod.isAnnotationPresent(Test.class);
+            return Arrays.stream(declaredMethod.getAnnotations())
+                         .anyMatch(annotation -> Arrays.stream(TEST_ANNOTATIONS)
+                                                       .anyMatch(testAnnotation -> testAnnotation.equals(annotation.annotationType()
+                                                                                                                   .getCanonicalName())));
         } catch (Exception e) {
             return false;
         }
