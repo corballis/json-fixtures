@@ -7,8 +7,8 @@ public class InvocationContextHolder {
     public static void updateContext(String testMethodName) {
         InvocationContext previousInvocation = initOrGet();
 
-        boolean executingNewTestcase =
-            previousInvocation.name == null || !previousInvocation.name.equals(testMethodName);
+        boolean executingNewTestcase = previousInvocation.name == null ||
+                                       !previousInvocation.name.equals(testMethodName);
         if (executingNewTestcase) {
             previousInvocation.reset(testMethodName);
         } else {
@@ -20,6 +20,7 @@ public class InvocationContextHolder {
         InvocationContext previousInvocation = invocationContext.get();
         if (previousInvocation == null) {
             previousInvocation = new InvocationContext();
+            previousInvocation.testExecutorThread = Thread.currentThread();
             invocationContext.set(previousInvocation);
         }
         return previousInvocation;
@@ -59,6 +60,7 @@ public class InvocationContextHolder {
         private String getName() {
             return name + "-" + invocationCount;
         }
+
     }
 
 }

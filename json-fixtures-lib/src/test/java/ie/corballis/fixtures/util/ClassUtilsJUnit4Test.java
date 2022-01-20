@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ClassUtilsTest {
+public class ClassUtilsJUnit4Test {
 
     @Test
     public void shouldGetTestInfo() {
@@ -13,7 +13,7 @@ public class ClassUtilsTest {
 
     private void aMethodCall() {
         assertThat(ClassUtils.getTestMethodName()).isEqualTo("shouldGetTestInfo");
-        assertThat(ClassUtils.getTestClassName()).isEqualTo(ClassUtilsTest.class.getName());
-        assertThat(ClassUtils.getTestClass()).isEqualTo(ClassUtilsTest.class);
+        assertThat(ClassUtils.getTestClassName()).isEqualTo(ClassUtilsJUnit4Test.class.getName());
+        assertThat(ClassUtils.getTestClass()).isEqualTo(ClassUtilsJUnit4Test.class);
     }
 }
