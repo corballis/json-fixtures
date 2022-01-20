@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.2.0] - 2022-01-20
 ### Added
 - JUnit 5 support
+- Dependency upgrades
 
 ## [3.1.0] - 2021-02-19
 ### Added
