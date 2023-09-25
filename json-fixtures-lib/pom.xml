@@ -3,14 +3,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>json-fixtures-lib</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>JSON Fixtures Library</name>
 
     <parent>
         <groupId>ie.corballis</groupId>
         <artifactId>json-fixtures</artifactId>
-        <version>4.0.0</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
 
     <dependencyManagement>
