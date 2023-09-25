@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2023-09-25
+### BREAKING CHANGES
+- Previously, certain classes could be configured with an explicit Reflections instance (scanners). This is not possible anymore.
+These classes will always use the Reflections instance provided by the Settings class.
+### Changed
+- The settings builder instantiated a default Reflections instance. This triggered a full scan, which might not be 
+desirable in some cases. For example, if an explicit Reflections instance is provided, the default one is not needed, but
+it was still created causing unnecessary overhead. This is not the case anymore. The default Reflections instance is only
+created if no explicit instance is provided.
+
 ## [3.2.0] - 2022-01-20
 ### Added
 - JUnit 5 support
