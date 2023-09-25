@@ -23,6 +23,7 @@ public class Settings {
     private final FixtureScanner fixtureScanner;
     private final BeanFactory beanFactory;
     private final SnapshotGenerator snapshotGenerator;
+    private final Reflections reflections;
 
     public Settings(Settings.Builder builder) {
         this.objectMapper = builder.objectMapper;
@@ -30,8 +31,8 @@ public class Settings {
         this.generatorFileNamingStrategy = builder.generatorFileNamingStrategy;
         this.snapshotFixtureWriter = builder.snapshotFixtureWriter;
         this.fixtureScanner = builder.fixtureScanner;
+        this.reflections = builder.getReflections();
         this.beanFactory = new BeanFactory(this.objectMapper, this.fixtureScanner);
-        this.beanFactory.init();
         this.snapshotGenerator = new SnapshotGenerator(beanFactory, this.fixtureScanner);
     }
 
@@ -67,10 +68,11 @@ public class Settings {
         return snapshotGenerator;
     }
 
-    public static class Builder {
+    public Reflections getReflections() {
+        return reflections;
+    }
 
-        public static final Reflections DEFAULT_REFLECTIONS = new Reflections(ClasspathHelper.forJavaClassPath(),
-                                                                              new ResourcesScanner());
+    public static class Builder {
 
         private FixtureScanner fixtureScanner;
         private FileNamingStrategy snapshotFileNamingStrategy;
@@ -108,7 +110,7 @@ public class Settings {
         }
 
         public Builder setDefaultFixtureScanner() {
-            return setFixtureScanner(new ClassPathFixtureScanner(getReflections()));
+            return setFixtureScanner(new ClassPathFixtureScanner());
         }
 
         public Builder setFixtureScanner(FixtureScanner fixtureScanner) {
@@ -118,7 +120,7 @@ public class Settings {
 
         public Reflections getReflections() {
             if (reflections == null) {
-                reflections = DEFAULT_REFLECTIONS;
+                reflections = new Reflections(ClasspathHelper.forJavaClassPath(), new ResourcesScanner());
             }
             return reflections;
         }
@@ -170,7 +172,7 @@ public class Settings {
         }
 
         public Builder useTestFileNameFixtureScanner(Class testClass) {
-            return setFixtureScanner(new TestFileNameFixtureScanner(testClass, getReflections()));
+            return setFixtureScanner(new TestFileNameFixtureScanner(testClass));
         }
 
         public Builder useFolderFixtureScanner(Class testClass) {

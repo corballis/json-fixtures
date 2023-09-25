@@ -30,6 +30,7 @@ public class BeanFactory {
     private FixtureScanner scanner;
     private FixtureReader reader;
     private ReferenceResolver referenceResolver;
+    private volatile boolean initialized = false;
 
     private Cache<String, JsonNode> fixtures = CacheBuilder.newBuilder().build();
 
@@ -48,20 +49,24 @@ public class BeanFactory {
         this(objectMapper, null);
     }
 
-    public void init() {
-        try {
-            if (scanner != null) {
-                List<Resource> resources = scanner.collectResources();
-                for (Resource resource : resources) {
-                    registerAll(reader.read(resource));
+    public synchronized void init() {
+        if (!initialized) {
+            initialized = true;
+            try {
+                if (scanner != null) {
+                    List<Resource> resources = scanner.collectResources();
+                    for (Resource resource : resources) {
+                        registerAll(reader.read(resource));
+                    }
                 }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
     public void registerAll(Map<String, JsonNode> fixtures) {
+        init();
         checkNotNull(fixtures, "Fixtures must not be null");
         for (Map.Entry<String, JsonNode> entry : fixtures.entrySet()) {
             registerFixture(entry.getKey(), entry.getValue());
@@ -69,18 +74,21 @@ public class BeanFactory {
     }
 
     public void registerFixture(String name, JsonNode fixture) {
+        init();
         checkNotNull(name, "Name must not be null");
         checkNotNull(fixture, "Fixture must not be null");
         fixtures.put(name, fixture);
     }
 
     public void unregisterAll(Collection<String> names) {
+        init();
         for (String name : names) {
             fixtures.invalidate(name);
         }
     }
 
     public void unregisterFixture(String name) {
+        init();
         fixtures.invalidate(name);
     }
 
@@ -140,6 +148,7 @@ public class BeanFactory {
     }
 
     public Optional<JsonNode> getFixtureAsJsonNode(String fixtureName) {
+        init();
         JsonNode fixtureAsJsonNode = fixtures.getIfPresent(fixtureName);
         if (fixtureAsJsonNode == null) {
             return Optional.empty();
@@ -149,6 +158,7 @@ public class BeanFactory {
     }
 
     private JsonNode mergeFixtures(String[] fixtureNames) {
+        init();
         List<JsonNode> fixtureList = collectFixtures(fixtureNames);
         JsonNode result = fixtureList.remove(0).deepCopy();
         for (JsonNode node : fixtureList) {
