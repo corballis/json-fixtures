@@ -2,6 +2,7 @@ package ie.corballis.fixtures.core;
 
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.SimpleType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import ie.corballis.fixtures.io.ClassPathResource;
 import ie.corballis.fixtures.io.DefaultFixtureReader;
 import ie.corballis.fixtures.settings.Settings;
@@ -135,5 +136,13 @@ public class BeanFactoryTest {
                                              NEW_LINE +
                                              "  }" + NEW_LINE +
                                              "}");
+    }
+
+    @Test
+    public void canMergeLists() {
+        CollectionType collectionType = TypeFactory.defaultInstance().constructCollectionType(List.class, MyBean.class);
+        List<MyBean> beans = factory.create(collectionType, "fixture6", "fixture7");
+        assertThat(beans.size()).isEqualTo(4);
+        assertThat(beans).contains(new MyBean("property4",4));
     }
 }

@@ -23,6 +23,7 @@ public class DefaultFixtureReaderTest {
                                                   "fixture5={\"nested\":{\"prop1\":\"value\"}}, " +
                                                   "fixture6=[{\"stringProperty\":\"property1\",\"intProperty\":1}," +
                                                   "{\"stringProperty\":\"property2\",\"intProperty\":2}," +
-                                                  "{\"stringProperty\":\"property3\",\"intProperty\":3}]}");
+                                                  "{\"stringProperty\":\"property3\",\"intProperty\":3}], " +
+                                                  "fixture7=[{\"stringProperty\":\"property4\",\"intProperty\":4}]}");
     }
 }
